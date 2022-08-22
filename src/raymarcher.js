@@ -20,6 +20,7 @@ const _size = new Vector2();
 
 class Raymarcher extends Mesh {
   constructor({
+    dino = null,
   } = {}) {
     const plane = new PlaneGeometry(2, 2, 1, 1);
     plane.deleteAttribute('normal');
@@ -38,7 +39,7 @@ class Raymarcher extends Mesh {
     super(plane, screen);
     const material = new RawShaderMaterial({
       glslVersion: GLSL3,
-      transparent: false,
+      transparent: true,
       vertexShader: raymarcherVertex,
       fragmentShader: raymarcherFragment.replace('#include <lighting>', lighting),
       defines: {
@@ -49,7 +50,8 @@ class Raymarcher extends Mesh {
       },
       uniforms: {
         time: { value: 0 },
-        size: { value: new Vector2(0.1, 0.1) },
+        size: { value: 0.1 },
+        dino: { value: dino },
         center: { value: new Vector2() },
         cameraDirection: { value: new Vector3() },
         cameraFar: { value: 0 },

@@ -27,18 +27,13 @@
     </script>
     <script type="module">
       import {
-        Color,
         Clock,
-        LinearFilter,
-        Matrix4,
-        NearestFilter,
         PerspectiveCamera,
-        PMREMGenerator,
-        Quaternion,
         Scene,
         sRGBEncoding,
-        Vector3,
+        TextureLoader,
         WebGLRenderer,
+        Vector2
       } from 'three';
       import { RoomEnvironment } from 'three-environment';
       import { GUI } from 'three-gui';
@@ -64,12 +59,16 @@
       camera.position.set(0, 0, 3);
       controls.enableDamping = true;
 
-      const raymarcher = new Raymarcher({});
+      const textureLoader = new TextureLoader();
+      //const dino = textureLoader.load('../static/icon.png');
+      const dino = textureLoader.load('../static/dino.png');
+      dino.offset = new Vector2(1.0);
+
+      const raymarcher = new Raymarcher({ dino });
       scene.add(raymarcher);
 
       const gui = new GUI({ title: 'dino' });
-      gui.add(raymarcher.userData.size, 'x', 0.01, 1, 0.01);
-      gui.add(raymarcher.userData.size, 'y', 0.01, 1, 0.01);
+      gui.add(raymarcher.userData, 'size', 0.01, 1, 0.01);
       gui.add(raymarcher.userData.center, 'x', -1, 1, 0.01);
       gui.add(raymarcher.userData.center, 'y', -1, 1, 0.01);
 
