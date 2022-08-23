@@ -15,15 +15,17 @@ uniform sampler2D dino;
 // TODO
 // uv coordinate redefine, it's a mess
 // size ratio is not correct (currently always 1)
-// background transparent issue
+// ref point should be defined from the bottom
 
-void draw(inout vec4 color, in vec2 center, in float size) {
+void draw(inout vec4 color, in vec3 color_, in float phase, in vec2 center, in float size) {
   float intensity = 1.0;
   float speed = 5.0;
   float frame = 6.0;
   float range = 0.1;
-  float mode = floor(mod(time * speed, frame));
-  bool flip = step(frame, mod(time * speed, frame * 2.0)) == 0.0;
+  float mode = floor(mod((time + phase) * speed, frame));
+  bool flip = step(frame, mod((time + phase) * speed, frame * 2.0)) == 0.0;
+  //float mode = 0.0;
+  //bool flip = false;
 
   float dispacement = mode * range / frame - range;
   center.x += flip ? -dispacement : dispacement;
@@ -65,13 +67,17 @@ void draw(inout vec4 color, in vec2 center, in float size) {
 
   vec4 tt = texture(dino, uu);
 
-  //color = vec4(vec3(intensity), 1.0);
-  color = vec4(vec3(0.0, intensity, 0.0), tt.w);
+  vec3 cc = (tt.x > 0.6) ? vec3(1.0) : color_;
+  vec4 pre_c = color;
+  vec4 cur_c = vec4(cc, tt.w * intensity);
+  color.xyz = (cur_c.w > 0.0) ? cur_c.xyz : pre_c.xyz;
+  color.w = max(pre_c.w, cur_c.w);
 }
 
 void main() {
   vec4 color = vec4(0.0);
-  draw(color, center, size);
+  draw(color, vec3(0.0,1.0,0.0), 0.0, center, size);
+  draw(color, vec3(0.0,0.0,1.0), 0.8, center-vec2(0.15,0.015), size * 0.8);
   //fragColor = vec4(uv, 1.0, 1.0);
   //fragColor = texture(dino, uv);
   fragColor = color;
