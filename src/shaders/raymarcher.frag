@@ -12,8 +12,21 @@ uniform sampler2D dino;
 
 #define texture2D texture
 
+// TODO
+// uv coordinate redefine, it's a mess
+// size ratio is not correct (currently always 1)
+// background transparent issue
+
 void draw(inout vec4 color, in vec2 center, in float size) {
   float intensity = 1.0;
+  float speed = 5.0;
+  float frame = 6.0;
+  float range = 0.1;
+  float mode = floor(mod(time * speed, frame));
+  bool flip = step(frame, mod(time * speed, frame * 2.0)) == 0.0;
+
+  float dispacement = mode * range / frame - range;
+  center.x += flip ? -dispacement : dispacement;
 
   vec2 a = center - size;
   vec2 b = center + size;
@@ -38,10 +51,13 @@ void draw(inout vec4 color, in vec2 center, in float size) {
   // 1233 100 "x": 848, "y": 0, "w": 176, "h": 52, "piece": 4,
   // lb 0.688 0.480 tr 0.830 1.000
 
-  float mode = floor(mod(time * 5.0, 6.0));
-
   vec2 lb = vec2(0.688 + mode / 4.0 * (0.830 - 0.688), 0.480);
   vec2 tr = vec2(0.688 + (mode + 1.0) / 4.0 * (0.830 - 0.688), 1.000);
+
+  vec2 llbb = lb;
+  vec2 ttrr = tr;
+  lb.x = flip ? ttrr.x : llbb.x;
+  tr.x = flip ? llbb.x : ttrr.x;
 
   vec2 uu = uuvv;
   uu.x = uuvv.x * (tr.x-lb.x)/(bb.x-aa.x) + lb.x - aa.x * (tr.x-lb.x)/(bb.x-aa.x);
@@ -50,10 +66,8 @@ void draw(inout vec4 color, in vec2 center, in float size) {
   vec4 tt = texture(dino, uu);
 
   //color = vec4(vec3(intensity), 1.0);
-  color = vec4(vec3(intensity), tt.w);
+  color = vec4(vec3(0.0, intensity, 0.0), tt.w);
 }
-
-// texture size 不一樣 min mapping?
 
 void main() {
   vec4 color = vec4(0.0);
