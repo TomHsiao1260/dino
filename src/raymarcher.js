@@ -50,9 +50,14 @@ class Raymarcher extends Mesh {
       },
       uniforms: {
         time: { value: 0 },
-        size: { value: 0.1 },
+        size: { value: 0.2 },
+        count: { value: 10 },
         dino: { value: dino },
-        center: { value: new Vector2() },
+        center: { value: new Vector2(0.0, -0.5) },
+        colorR: { value: 0.5 },
+        colorG: { value: 0.5 },
+        colorB: { value: 0.5 },
+        delta: { value: 0.0 },
         cameraDirection: { value: new Vector3() },
         cameraFar: { value: 0 },
         cameraFov: { value: 0 },
@@ -74,11 +79,41 @@ class Raymarcher extends Mesh {
       set size(value) {
         uniforms.size.value = value;
       },
+      get count() {
+        return uniforms.count.value;
+      },
+      set count(value) {
+        uniforms.count.value = value;
+      },
       get center() {
         return uniforms.center.value;
       },
       set center(value) {
         uniforms.center.value = value;
+      },
+      get colorR() {
+        return uniforms.colorR.value;
+      },
+      set colorR(value) {
+        uniforms.colorR.value = value;
+      },
+      get colorG() {
+        return uniforms.colorG.value;
+      },
+      set colorG(value) {
+        uniforms.colorG.value = value;
+      },
+      get colorB() {
+        return uniforms.colorB.value;
+      },
+      set colorB(value) {
+        uniforms.colorB.value = value;
+      },
+      get delta() {
+        return uniforms.delta.value;
+      },
+      set delta(value) {
+        uniforms.delta.value = value;
       },
       resolution: 1,
       raymarcher: new Mesh(plane, material),

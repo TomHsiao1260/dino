@@ -68,9 +68,14 @@
       scene.add(raymarcher);
 
       const gui = new GUI({ title: 'dino' });
-      gui.add(raymarcher.userData, 'size', 0.01, 1, 0.01);
+      gui.add(raymarcher.userData, 'size', 0.01, 2, 0.01);
+      gui.add(raymarcher.userData, 'count', 1, 500, 1);
       gui.add(raymarcher.userData.center, 'x', -1, 1, 0.01);
       gui.add(raymarcher.userData.center, 'y', -1, 1, 0.01);
+      gui.add(raymarcher.userData, 'colorR', 0, 1, 0.01);
+      gui.add(raymarcher.userData, 'colorG', 0, 1, 0.01);
+      gui.add(raymarcher.userData, 'colorB', 0, 1, 0.01);
+      gui.add(raymarcher.userData, 'delta', 0, 1, 0.01);
 
       const clock = new Clock();
       const tick = () => {

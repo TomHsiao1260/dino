@@ -7,15 +7,21 @@ uniform vec2 resolution;
 
 uniform float time;
 uniform float size;
+uniform int count;
 uniform vec2 center;
 uniform sampler2D dino;
+
+uniform float colorR;
+uniform float colorG;
+uniform float colorB;
+uniform float delta;
 
 #define texture2D texture
 
 // TODO
 // uv coordinate redefine, it's a mess
 // size ratio is not correct (currently always 1)
-// ref point should be defined from the bottom
+// simpler way to write getter & setter
 
 void draw(inout vec4 color, in vec3 color_, in float phase, in vec2 center, in float size) {
   float intensity = 1.0;
@@ -30,8 +36,8 @@ void draw(inout vec4 color, in vec3 color_, in float phase, in vec2 center, in f
   float dispacement = mode * range / frame - range;
   center.x += flip ? -dispacement : dispacement;
 
-  vec2 a = center - size;
-  vec2 b = center + size;
+  vec2 a = center - size / 2.0;
+  vec2 b = center + size / 2.0;
 
   intensity = min(intensity, step(a.x, uv.x));
   intensity = min(intensity, step(a.y, uv.y));
@@ -67,7 +73,7 @@ void draw(inout vec4 color, in vec3 color_, in float phase, in vec2 center, in f
 
   vec4 tt = texture(dino, uu);
 
-  vec3 cc = (tt.x > 0.6) ? vec3(1.0) : color_;
+  vec3 cc = (tt.x > 0.5) ? vec3(1.0) : color_;
   vec4 pre_c = color;
   vec4 cur_c = vec4(cc, tt.w * intensity);
   color.xyz = (cur_c.w > 0.0) ? cur_c.xyz : pre_c.xyz;
@@ -76,9 +82,28 @@ void draw(inout vec4 color, in vec3 color_, in float phase, in vec2 center, in f
 
 void main() {
   vec4 color = vec4(0.0);
-  draw(color, vec3(0.0,1.0,0.0), 0.0, center, size);
-  draw(color, vec3(0.0,0.0,1.0), 0.8, center-vec2(0.15,0.015), size * 0.8);
+
+  for(int i=0; i<count; ++i)
+  {
+    float r_position = fract(sin(float(i))*1235.0) - 0.5;
+    float r_size = fract(sin(float(i))*348.0) - 0.5;
+    float r_phase = fract(sin(float(i))*869.0) - 0.5;
+
+    vec3 r_color;
+    r_color.r = fract(sin(float(i))*687.0) - 0.5;
+    r_color.g = fract(sin(float(i))*99.0) - 0.5;
+    r_color.b = fract(sin(float(i))*761.0) - 0.5;
+
+    float s = size - r_size * 0.2;
+    vec2 p = center + vec2(r_position * 1.5, s/2.0);
+    float ph = r_phase;
+    vec3 c = vec3(colorR, colorG, colorB) - r_color * delta;
+  
+    draw(color, c, ph, p, s);
+  }
+
+  fragColor = color;
+
   //fragColor = vec4(uv, 1.0, 1.0);
   //fragColor = texture(dino, uv);
-  fragColor = color;
 }
