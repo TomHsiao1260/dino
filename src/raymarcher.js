@@ -15,6 +15,8 @@ import raymarcherFragment from './shaders/raymarcher.frag';
 import raymarcherVertex from './shaders/raymarcher.vert';
 import screenFragment from './shaders/screen.frag';
 import screenVertex from './shaders/screen.vert';
+import sketchFragment from './shaders/sketch.frag';
+import sketchVertex from './shaders/sketch.vert';
 
 const _size = new Vector2();
 
@@ -25,7 +27,8 @@ class Raymarcher extends Mesh {
     const plane = new PlaneGeometry(2, 2, 1, 1);
     plane.deleteAttribute('normal');
     plane.deleteAttribute('uv');
-    const target = new WebGLRenderTarget(1, 1, { depthTexture: new DepthTexture(1, 1, UnsignedShortType) });
+    const target = new WebGLRenderTarget(1, 1);
+    const sketchTarget = new WebGLRenderTarget(1, 1);
     const screen = new RawShaderMaterial({
       glslVersion: GLSL3,
       transparent: false,
@@ -53,16 +56,27 @@ class Raymarcher extends Mesh {
         size: { value: 0.2 },
         count: { value: 10 },
         dino: { value: dino },
+        sketch: { value: sketchTarget.texture },
         center: { value: new Vector2(0.0, -0.5) },
         colorR: { value: 0.5 },
         colorG: { value: 0.5 },
         colorB: { value: 0.5 },
         delta: { value: 0.0 },
+        fullSketch: { value: false },
         cameraDirection: { value: new Vector3() },
         cameraFar: { value: 0 },
         cameraFov: { value: 0 },
         cameraNear: { value: 0 },
         resolution: { value: new Vector2() },
+      },
+    });
+    const msketch = new RawShaderMaterial({
+      glslVersion: GLSL3,
+      transparent: false,
+      vertexShader: sketchVertex,
+      fragmentShader: sketchFragment,
+      uniforms: {
+        mouse: { value: new Vector2() },
       },
     });
     const { defines, uniforms } = material;
@@ -78,6 +92,12 @@ class Raymarcher extends Mesh {
       },
       set size(value) {
         uniforms.size.value = value;
+      },
+      get mouse() {
+        return msketch.uniforms.mouse.value;
+      },
+      set mouse(value) {
+        msketch.uniforms.mouse.value = value;
       },
       get count() {
         return uniforms.count.value;
@@ -109,6 +129,12 @@ class Raymarcher extends Mesh {
       set colorB(value) {
         uniforms.colorB.value = value;
       },
+      get fullSketch() {
+        return uniforms.fullSketch.value;
+      },
+      set fullSketch(value) {
+        uniforms.fullSketch.value = value;
+      },
       get delta() {
         return uniforms.delta.value;
       },
@@ -116,8 +142,12 @@ class Raymarcher extends Mesh {
         uniforms.delta.value = value;
       },
       resolution: 1,
+      reset: false,
       raymarcher: new Mesh(plane, material),
+      sketch: new Mesh(plane, msketch),
       target,
+      screen,
+      sketchTarget,
     };
     this.matrixAutoUpdate = this.userData.raymarcher.matrixAutoUpdate = false;
     this.frustumCulled = this.userData.raymarcher.frustumCulled = false;
@@ -134,7 +164,7 @@ class Raymarcher extends Mesh {
   }
 
   onBeforeRender(renderer, scene, camera) {
-    const { userData: { resolution, raymarcher, target } } = this;
+    const { userData: { resolution, raymarcher, sketch, target, sketchTarget, reset } } = this;
     const { material: { defines, uniforms } } = raymarcher;
 
     camera.getWorldDirection(uniforms.cameraDirection.value);
@@ -145,6 +175,7 @@ class Raymarcher extends Mesh {
     renderer.getDrawingBufferSize(_size).multiplyScalar(resolution).floor();
     if (target.width !== _size.x || target.height !== _size.y) {
       target.setSize(_size.x, _size.y);
+      sketchTarget.setSize(_size.x, _size.y);
       uniforms.resolution.value.copy(_size);
     }
 
@@ -157,11 +188,16 @@ class Raymarcher extends Mesh {
     renderer.shadowMap.autoUpdate = false;
     renderer.xr.enabled = false;
     renderer.setClearAlpha(0);
-    renderer.setRenderTarget(target);
     renderer.state.buffers.depth.setMask(true);
 
+    renderer.setRenderTarget(target);
     renderer.clear();
     renderer.render(raymarcher, camera);
+
+    renderer.setRenderTarget(sketchTarget);
+    if (reset) { renderer.clear(); this.userData.reset = false; }
+    renderer.render(sketch, camera);
+    // this.userData.screen.uniforms.colorTexture.value = fullSketch ? sketchTarget.texture : target.texture;
 
     renderer.autoClear = currentAutoClear;
     renderer.shadowMap.autoUpdate = currentShadowAutoUpdate;

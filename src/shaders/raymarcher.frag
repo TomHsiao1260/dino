@@ -9,7 +9,9 @@ uniform float time;
 uniform float size;
 uniform int count;
 uniform vec2 center;
+uniform bool fullSketch;
 uniform sampler2D dino;
+uniform sampler2D sketch;
 
 uniform float colorR;
 uniform float colorG;
@@ -59,8 +61,10 @@ void draw(inout vec4 color, in vec3 color_, in float phase, in vec2 center, in f
   // 1233 100 "x": 848, "y": 0, "w": 176, "h": 52, "piece": 4,
   // lb 0.688 0.480 tr 0.830 1.000
 
-  vec2 lb = vec2(0.688 + mode / 4.0 * (0.830 - 0.688), 0.480);
-  vec2 tr = vec2(0.688 + (mode + 1.0) / 4.0 * (0.830 - 0.688), 1.000);
+  // vec2 lb = vec2(0.688 + mode / 4.0 * (0.830 - 0.688), 0.480);
+  // vec2 tr = vec2(0.688 + (mode + 1.0) / 4.0 * (0.830 - 0.688), 1.000);
+  vec2 lb = vec2(0.0);
+  vec2 tr = vec2(1.0);
 
   vec2 llbb = lb;
   vec2 ttrr = tr;
@@ -71,9 +75,11 @@ void draw(inout vec4 color, in vec3 color_, in float phase, in vec2 center, in f
   uu.x = uuvv.x * (tr.x-lb.x)/(bb.x-aa.x) + lb.x - aa.x * (tr.x-lb.x)/(bb.x-aa.x);
   uu.y = uuvv.y * (tr.y-lb.y)/(bb.y-aa.y) + lb.y - aa.y * (tr.y-lb.y)/(bb.y-aa.y);
 
-  vec4 tt = texture(dino, uu);
+  // vec4 tt = texture(dino, uu);
+  vec4 tt = texture(sketch, uu);
 
-  vec3 cc = (tt.x > 0.5) ? vec3(1.0) : color_;
+  vec3 cc = (tt.x > 0.5) ? color_ : vec3(0.0);
+  // vec3 cc = (tt.x > 0.5) ? vec3(1.0) : color_;
   vec4 pre_c = color;
   vec4 cur_c = vec4(cc, tt.w * intensity);
   color.xyz = (cur_c.w > 0.0) ? cur_c.xyz : pre_c.xyz;
@@ -98,12 +104,16 @@ void main() {
     vec2 p = center + vec2(r_position * 1.5, s/2.0);
     float ph = r_phase;
     vec3 c = vec3(colorR, colorG, colorB) - r_color * delta;
-  
+
     draw(color, c, ph, p, s);
   }
 
   fragColor = color;
 
-  //fragColor = vec4(uv, 1.0, 1.0);
-  //fragColor = texture(dino, uv);
+  float aspect = resolution.y / resolution.x;
+  vec2 uuvv = uv;
+  uuvv.x = (uv.x + 1.0) / 2.0;
+  uuvv.y = (uv.y / aspect + 1.0) / 2.0;
+  // draw full screen sketch
+  if (fullSketch) fragColor = texture(sketch, uuvv);
 }
