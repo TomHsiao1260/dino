@@ -27,8 +27,11 @@ class Raymarcher extends Mesh {
     const plane = new PlaneGeometry(2, 2, 1, 1);
     plane.deleteAttribute('normal');
     plane.deleteAttribute('uv');
+
     const target = new WebGLRenderTarget(1, 1);
     const sketchTarget = new WebGLRenderTarget(1, 1);
+    const groundTarget = new WebGLRenderTarget(1, 1);
+
     const screen = new RawShaderMaterial({
       glslVersion: GLSL3,
       transparent: false,
@@ -57,12 +60,13 @@ class Raymarcher extends Mesh {
         count: { value: 10 },
         dino: { value: dino },
         sketch: { value: sketchTarget.texture },
-        center: { value: new Vector2(0.0, -0.5) },
+        ground: { value: groundTarget.texture },
+        sketchMode: { value: 1 },
+        center: { value: new Vector2(0.0, -0.55) },
         colorR: { value: 0.5 },
         colorG: { value: 0.5 },
         colorB: { value: 0.5 },
         delta: { value: 0.0 },
-        fullSketch: { value: false },
         cameraDirection: { value: new Vector3() },
         cameraFar: { value: 0 },
         cameraFov: { value: 0 },
@@ -77,6 +81,7 @@ class Raymarcher extends Mesh {
       fragmentShader: sketchFragment,
       uniforms: {
         mouse: { value: new Vector2() },
+        number: { value: 10 },
       },
     });
     const { defines, uniforms } = material;
@@ -129,17 +134,17 @@ class Raymarcher extends Mesh {
       set colorB(value) {
         uniforms.colorB.value = value;
       },
-      get fullSketch() {
-        return uniforms.fullSketch.value;
-      },
-      set fullSketch(value) {
-        uniforms.fullSketch.value = value;
-      },
       get delta() {
         return uniforms.delta.value;
       },
       set delta(value) {
         uniforms.delta.value = value;
+      },
+      get sketchMode() {
+        return Object.keys(Raymarcher.sketchMode)[uniforms.sketchMode.value];
+      },
+      set sketchMode(value) {
+        uniforms.sketchMode.value = Raymarcher.sketchMode[value];
       },
       resolution: 1,
       reset: false,
@@ -148,6 +153,7 @@ class Raymarcher extends Mesh {
       target,
       screen,
       sketchTarget,
+      groundTarget,
     };
     this.matrixAutoUpdate = this.userData.raymarcher.matrixAutoUpdate = false;
     this.frustumCulled = this.userData.raymarcher.frustumCulled = false;
@@ -164,7 +170,8 @@ class Raymarcher extends Mesh {
   }
 
   onBeforeRender(renderer, scene, camera) {
-    const { userData: { resolution, raymarcher, sketch, target, sketchTarget, reset } } = this;
+    const { userData: { resolution, raymarcher, sketch, sketchMode } } = this;
+    const { userData: { target, sketchTarget, groundTarget, reset } } = this;
     const { material: { defines, uniforms } } = raymarcher;
 
     camera.getWorldDirection(uniforms.cameraDirection.value);
@@ -176,6 +183,7 @@ class Raymarcher extends Mesh {
     if (target.width !== _size.x || target.height !== _size.y) {
       target.setSize(_size.x, _size.y);
       sketchTarget.setSize(_size.x, _size.y);
+      groundTarget.setSize(_size.x, _size.y);
       uniforms.resolution.value.copy(_size);
     }
 
@@ -194,10 +202,21 @@ class Raymarcher extends Mesh {
     renderer.clear();
     renderer.render(raymarcher, camera);
 
-    renderer.setRenderTarget(sketchTarget);
+    switch (Raymarcher.sketchMode[sketchMode]) {
+      case 0: // fullSketch
+        renderer.setRenderTarget(sketchTarget);
+        sketch.material.uniforms.number.value = 10.0;
+        break;
+      case 1: // ground
+        renderer.setRenderTarget(groundTarget);
+        sketch.material.uniforms.number.value = 30.0;
+        break;
+      default:
+        break;
+    }
+
     if (reset) { renderer.clear(); this.userData.reset = false; }
     renderer.render(sketch, camera);
-    // this.userData.screen.uniforms.colorTexture.value = fullSketch ? sketchTarget.texture : target.texture;
 
     renderer.autoClear = currentAutoClear;
     renderer.shadowMap.autoUpdate = currentShadowAutoUpdate;
@@ -207,5 +226,11 @@ class Raymarcher extends Mesh {
     if (camera.viewport) renderer.state.viewport(camera.viewport);
   }
 }
+
+Raymarcher.sketchMode = {
+  fullSketch: 0,
+  ground: 1,
+  light: 2,
+};
 
 export default Raymarcher;

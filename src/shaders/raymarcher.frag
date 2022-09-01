@@ -9,9 +9,10 @@ uniform float time;
 uniform float size;
 uniform int count;
 uniform vec2 center;
-uniform bool fullSketch;
+uniform int sketchMode;
 uniform sampler2D dino;
 uniform sampler2D sketch;
+uniform sampler2D ground;
 
 uniform float colorR;
 uniform float colorG;
@@ -24,6 +25,10 @@ uniform float delta;
 // uv coordinate redefine, it's a mess
 // size ratio is not correct (currently always 1)
 // simpler way to write getter & setter
+// accelerate the parameters generate & control process (abstraction)
+// ground detection may need to improve its performance
+
+// y axis are wrong
 
 void draw(inout vec4 color, in vec3 color_, in float phase, in vec2 center, in float size) {
   float intensity = 1.0;
@@ -37,6 +42,16 @@ void draw(inout vec4 color, in vec3 color_, in float phase, in vec2 center, in f
 
   float dispacement = mode * range / frame - range;
   center.x += flip ? -dispacement : dispacement;
+
+  // performance may drop a lot because of this
+  float height = 0.0;
+  for(int j=0; j<30; ++j)
+  {
+    float height_ = (30.0-float(j))/30.0;
+    vec4 cc = texture(ground, vec2((center.x+1.0)/2.0, height_));
+    if (cc.x > 0.1) { height = height_; break; }
+  }
+  center.y += height;
 
   vec2 a = center - size / 2.0;
   vec2 b = center + size / 2.0;
@@ -89,31 +104,40 @@ void draw(inout vec4 color, in vec3 color_, in float phase, in vec2 center, in f
 void main() {
   vec4 color = vec4(0.0);
 
-  for(int i=0; i<count; ++i)
-  {
-    float r_position = fract(sin(float(i))*1235.0) - 0.5;
-    float r_size = fract(sin(float(i))*348.0) - 0.5;
-    float r_phase = fract(sin(float(i))*869.0) - 0.5;
-
-    vec3 r_color;
-    r_color.r = fract(sin(float(i))*687.0) - 0.5;
-    r_color.g = fract(sin(float(i))*99.0) - 0.5;
-    r_color.b = fract(sin(float(i))*761.0) - 0.5;
-
-    float s = size - r_size * 0.2;
-    vec2 p = center + vec2(r_position * 1.5, s/2.0);
-    float ph = r_phase;
-    vec3 c = vec3(colorR, colorG, colorB) - r_color * delta;
-
-    draw(color, c, ph, p, s);
-  }
-
-  fragColor = color;
-
   float aspect = resolution.y / resolution.x;
   vec2 uuvv = uv;
   uuvv.x = (uv.x + 1.0) / 2.0;
   uuvv.y = (uv.y / aspect + 1.0) / 2.0;
-  // draw full screen sketch
-  if (fullSketch) fragColor = texture(sketch, uuvv);
+
+  switch (sketchMode) {
+    default:
+    case 0: // fullSketch
+      fragColor = texture(sketch, uuvv);
+      break;
+    case 1: // ground
+      vec4 groundColor = texture(ground, uuvv);
+      groundColor.xyz *= 0.5;
+
+      for(int i=0; i<count; ++i)
+      {
+        float r_position = fract(sin(float(i))*1235.0) - 0.5;
+        float r_size = fract(sin(float(i))*348.0) - 0.5;
+        float r_phase = fract(sin(float(i))*869.0) - 0.5;
+
+        vec3 r_color;
+        r_color.r = fract(sin(float(i))*687.0) - 0.5;
+        r_color.g = fract(sin(float(i))*99.0) - 0.5;
+        r_color.b = fract(sin(float(i))*761.0) - 0.5;
+
+        float s = size - r_size * 0.2;
+        vec2 p = center + vec2(r_position * 1.5, s/2.0);
+        float ph = r_phase;
+        vec3 c = vec3(colorR, colorG, colorB) - r_color * delta;
+
+        draw(color, c, ph, p, s);
+      }
+
+      fragColor = (color.x > 0.0) ? color : groundColor;
+      break;
+  }
 }

@@ -76,7 +76,7 @@
       gui.add(raymarcher.userData, 'colorG', 0, 1, 0.01);
       gui.add(raymarcher.userData, 'colorB', 0, 1, 0.01);
       gui.add(raymarcher.userData, 'delta', 0, 1, 0.01);
-      gui.add(raymarcher.userData, 'fullSketch');
+      gui.add(raymarcher.userData, 'sketchMode', Object.keys(Raymarcher.sketchMode));
 
       const obj = {
         reset: function() { raymarcher.userData.reset = true;  },
