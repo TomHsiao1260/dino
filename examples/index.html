@@ -83,13 +83,19 @@
       };
       gui.add(obj, 'reset');
 
-      window.addEventListener('mousedown', (e) => {
+      let tick, renderOnce, remove;
+      const canvas = document.querySelector('#renderer');
+
+      canvas.addEventListener('mousedown', (e) => {
         update(e);
-        window.addEventListener('mousemove', update);
+        renderOnce();
+        canvas.addEventListener('mousemove', update);
       })
-      window.addEventListener('mouseup', (e) => {
-        window.removeEventListener('mousemove', update);
+      canvas.addEventListener('mouseup', (e) => {
+        canvas.removeEventListener('mousemove', update);
+        raymarcher.userData.mouse = new Vector2(-1, -1);
       })
+
       // mouse click to uv coordinate (0,0) -> (1,1)
       const mouse = new Vector2();
       function update(e) {
@@ -99,17 +105,29 @@
       }
 
       const clock = new Clock();
-      const tick = () => {
+
+      renderOnce = () => {
         const t = clock.getElapsedTime()
         raymarcher.userData.time = t;
 
         controls.update();
         stats.update();
         renderer.render(scene, camera);
+      };
 
-        window.requestAnimationFrame(tick);
+      tick = () => {
+        renderOnce();
+        remove = window.requestAnimationFrame(tick);
       };
       tick();
+
+      document.body.onkeyup = function(e) {
+        // space: start or stop
+        if (e.keyCode == 32) {
+          if (!remove) { tick(); return; }
+          if (remove) { window.cancelAnimationFrame(remove); remove = null; return; }
+        }
+      }
     </script>
   </body>
 </html>

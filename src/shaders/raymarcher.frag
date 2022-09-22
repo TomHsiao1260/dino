@@ -27,6 +27,7 @@ uniform float delta;
 // simpler way to write getter & setter
 // accelerate the parameters generate & control process (abstraction)
 // ground detection may need to improve its performance
+// adding physics rule interface should be more straightforward
 
 // y axis are wrong
 
@@ -43,15 +44,16 @@ void draw(inout vec4 color, in vec3 color_, in float phase, in vec2 center, in f
   float dispacement = mode * range / frame - range;
   center.x += flip ? -dispacement : dispacement;
 
-  // performance may drop a lot because of this
-  float height = 0.0;
-  for(int j=0; j<30; ++j)
-  {
-    float height_ = (30.0-float(j))/30.0;
-    vec4 cc = texture(ground, vec2((center.x+1.0)/2.0, height_));
-    if (cc.x > 0.1) { height = height_; break; }
-  }
-  center.y += height;
+  // float aspect = resolution.y / resolution.x;
+  // // performance may drop a lot because of this
+  // float height = 0.0;
+  // for(int j=0; j<30; ++j)
+  // {
+  //   float height_ = (30.0-float(j))/30.0;
+  //   vec4 cc = texture(ground, vec2((center.x+1.0)/2.0, (height_/aspect+1.0)/2.0));
+  //   if (cc.x > 0.1) { height = height_; break; }
+  // }
+  // center.y += height;
 
   vec2 a = center - size / 2.0;
   vec2 b = center + size / 2.0;

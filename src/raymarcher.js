@@ -66,7 +66,7 @@ class Raymarcher extends Mesh {
         colorR: { value: 0.5 },
         colorG: { value: 0.5 },
         colorB: { value: 0.5 },
-        delta: { value: 0.0 },
+        delta: { value: 1.0 },
         cameraDirection: { value: new Vector3() },
         cameraFar: { value: 0 },
         cameraFov: { value: 0 },
@@ -80,7 +80,7 @@ class Raymarcher extends Mesh {
       vertexShader: sketchVertex,
       fragmentShader: sketchFragment,
       uniforms: {
-        mouse: { value: new Vector2() },
+        mouse: { value: new Vector2(-1, -1) },
         number: { value: 10 },
       },
     });
