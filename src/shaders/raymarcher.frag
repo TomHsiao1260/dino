@@ -12,7 +12,7 @@ uniform vec2 center;
 uniform int sketchMode;
 uniform sampler2D dino;
 uniform sampler2D sketch;
-uniform sampler2D ground;
+uniform sampler2D sand;
 
 uniform float colorR;
 uniform float colorG;
@@ -50,7 +50,7 @@ void draw(inout vec4 color, in vec3 color_, in float phase, in vec2 center, in f
   // for(int j=0; j<30; ++j)
   // {
   //   float height_ = (30.0-float(j))/30.0;
-  //   vec4 cc = texture(ground, vec2((center.x+1.0)/2.0, (height_/aspect+1.0)/2.0));
+  //   vec4 cc = texture(sand, vec2((center.x+1.0)/2.0, (height_/aspect+1.0)/2.0));
   //   if (cc.x > 0.1) { height = height_; break; }
   // }
   // center.y += height;
@@ -116,9 +116,8 @@ void main() {
     case 0: // fullSketch
       fragColor = texture(sketch, uuvv);
       break;
-    case 1: // ground
-      vec4 groundColor = texture(ground, uuvv);
-      groundColor.xyz *= 0.5;
+    case 1: case 2: case 3: case 4: // sand
+      vec4 sandColor = texture(sand, uuvv);
 
       for(int i=0; i<count; ++i)
       {
@@ -139,7 +138,7 @@ void main() {
         draw(color, c, ph, p, s);
       }
 
-      fragColor = (color.x > 0.0) ? color : groundColor;
+      fragColor = (color.x > 0.0) ? color : sandColor;
       break;
   }
 }

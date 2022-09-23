@@ -15,6 +15,10 @@ import raymarcherFragment from './shaders/raymarcher.frag';
 import raymarcherVertex from './shaders/raymarcher.vert';
 import screenFragment from './shaders/screen.frag';
 import screenVertex from './shaders/screen.vert';
+import sandFragment from './shaders/sand.frag';
+import sandVertex from './shaders/sand.vert';
+import sandmFragment from './shaders/sandm.frag';
+import sandmVertex from './shaders/sandm.vert';
 import sketchFragment from './shaders/sketch.frag';
 import sketchVertex from './shaders/sketch.vert';
 
@@ -30,7 +34,10 @@ class Raymarcher extends Mesh {
 
     const target = new WebGLRenderTarget(1, 1);
     const sketchTarget = new WebGLRenderTarget(1, 1);
-    const groundTarget = new WebGLRenderTarget(1, 1);
+
+    const sandTarget0 = new WebGLRenderTarget(1, 1);
+    const sandTarget1 = new WebGLRenderTarget(1, 1);
+    const sandTargetm = new WebGLRenderTarget(1, 1);
 
     const screen = new RawShaderMaterial({
       glslVersion: GLSL3,
@@ -60,7 +67,7 @@ class Raymarcher extends Mesh {
         count: { value: 10 },
         dino: { value: dino },
         sketch: { value: sketchTarget.texture },
-        ground: { value: groundTarget.texture },
+        sand: { value: sandTarget0.texture },
         sketchMode: { value: 1 },
         center: { value: new Vector2(0.0, -0.55) },
         colorR: { value: 0.5 },
@@ -74,6 +81,32 @@ class Raymarcher extends Mesh {
         resolution: { value: new Vector2() },
       },
     });
+    const msand = new RawShaderMaterial({
+      glslVersion: GLSL3,
+      transparent: false,
+      vertexShader: sandVertex,
+      fragmentShader: sandFragment,
+      uniforms: {
+        bufferRead: { value: 0 },
+        sketchMode: { value: 1 },
+        bufferRead: { value: 0 },
+        resolution: { value: new Vector2() },
+        mouse: { value: new Vector2(-1, -1) },
+        colorTexture: { value: sandTarget0.texture },
+        mmTexture: { value: sandTargetm.texture },
+      },
+    });
+    const msandm = new RawShaderMaterial({
+      glslVersion: GLSL3,
+      transparent: false,
+      vertexShader: sandmVertex,
+      fragmentShader: sandmFragment,
+      uniforms: {
+        colorTexture: { value: sandTarget0.texture },
+        resolution: { value: new Vector2() },
+      },
+    });
+
     const msketch = new RawShaderMaterial({
       glslVersion: GLSL3,
       transparent: false,
@@ -103,6 +136,7 @@ class Raymarcher extends Mesh {
       },
       set mouse(value) {
         msketch.uniforms.mouse.value = value;
+        msand.uniforms.mouse.value = value;
       },
       get count() {
         return uniforms.count.value;
@@ -145,18 +179,31 @@ class Raymarcher extends Mesh {
       },
       set sketchMode(value) {
         uniforms.sketchMode.value = Raymarcher.sketchMode[value];
+        msand.uniforms.sketchMode.value = Raymarcher.sketchMode[value];
+      },
+      get bufferRead() {
+        return Object.keys(Raymarcher.bufferRead)[msand.uniforms.bufferRead.value];
+      },
+      set bufferRead(value) {
+        msand.uniforms.bufferRead.value = Raymarcher.bufferRead[value];
       },
       resolution: 1,
       reset: false,
       raymarcher: new Mesh(plane, material),
       sketch: new Mesh(plane, msketch),
+      sandmesh: new Mesh(plane, msand),
+      sandmmesh: new Mesh(plane, msandm),
       target,
       screen,
       sketchTarget,
-      groundTarget,
+      sandTarget0,
+      sandTarget1,
+      sandTargetm,
+      renderScreenOnly: false,
     };
     this.matrixAutoUpdate = this.userData.raymarcher.matrixAutoUpdate = false;
     this.frustumCulled = this.userData.raymarcher.frustumCulled = false;
+    this.clock = 0;
   }
 
   dispose() {
@@ -170,8 +217,8 @@ class Raymarcher extends Mesh {
   }
 
   onBeforeRender(renderer, scene, camera) {
-    const { userData: { resolution, raymarcher, sketch, sketchMode } } = this;
-    const { userData: { target, sketchTarget, groundTarget, reset } } = this;
+    const { userData: { resolution, raymarcher, sketch, sandmesh, sandmmesh, sketchMode, renderScreenOnly } } = this;
+    const { userData: { target, sketchTarget, sandTarget0, sandTarget1, sandTargetm, reset } } = this;
     const { material: { defines, uniforms } } = raymarcher;
 
     camera.getWorldDirection(uniforms.cameraDirection.value);
@@ -183,8 +230,12 @@ class Raymarcher extends Mesh {
     if (target.width !== _size.x || target.height !== _size.y) {
       target.setSize(_size.x, _size.y);
       sketchTarget.setSize(_size.x, _size.y);
-      groundTarget.setSize(_size.x, _size.y);
+      sandTarget0.setSize(_size.x, _size.y);
+      sandTarget1.setSize(_size.x, _size.y);
+      sandTargetm.setSize(_size.x, _size.y);
       uniforms.resolution.value.copy(_size);
+      sandmesh.material.uniforms.resolution.value.copy(_size);
+      sandmmesh.material.uniforms.resolution.value.copy(_size);
     }
 
     const currentAutoClear = renderer.autoClear;
@@ -198,25 +249,44 @@ class Raymarcher extends Mesh {
     renderer.setClearAlpha(0);
     renderer.state.buffers.depth.setMask(true);
 
-    renderer.setRenderTarget(target);
-    renderer.clear();
-    renderer.render(raymarcher, camera);
-
     switch (Raymarcher.sketchMode[sketchMode]) {
       case 0: // fullSketch
         renderer.setRenderTarget(sketchTarget);
         sketch.material.uniforms.number.value = 10.0;
+
+        if (reset) { renderer.clear(); this.userData.reset = false; }
+        renderer.render(sketch, camera);
         break;
-      case 1: // ground
-        renderer.setRenderTarget(groundTarget);
-        sketch.material.uniforms.number.value = 30.0;
+      case 1: case 2: case 3: case 4: // sand
+        if (!renderScreenOnly) this.clock = 1.0 - this.clock;
+
+        const t0 = (this.clock) ? sandTarget0 : sandTarget1;
+        const t1 = (this.clock) ? sandTarget1 : sandTarget0;
+
+        if (!renderScreenOnly) {
+          renderer.setRenderTarget(sandTargetm);
+          sandmmesh.material.uniforms.colorTexture.value = t0.texture;
+          if (reset) { renderer.clear(); this.userData.reset = false; }
+          if (!reset) renderer.render(sandmmesh, camera);
+
+          renderer.setRenderTarget(t1);
+          sandmesh.material.uniforms.colorTexture.value = t0.texture;
+          if (reset) { renderer.clear(); renderer.setRenderTarget(t0); renderer.clear(); this.userData.reset = false; }
+          if (!reset) renderer.render(sandmesh, camera);
+        }
+
+        if (sandmesh.material.uniforms.bufferRead.value === 0) raymarcher.material.uniforms.sand.value = t1.texture;
+        if (sandmesh.material.uniforms.bufferRead.value === 1) raymarcher.material.uniforms.sand.value = t0.texture;
+        if (sandmesh.material.uniforms.bufferRead.value === 2) raymarcher.material.uniforms.sand.value = sandTargetm.texture;
+
         break;
       default:
         break;
     }
 
-    if (reset) { renderer.clear(); this.userData.reset = false; }
-    renderer.render(sketch, camera);
+    renderer.setRenderTarget(target);
+    renderer.clear();
+    renderer.render(raymarcher, camera);
 
     renderer.autoClear = currentAutoClear;
     renderer.shadowMap.autoUpdate = currentShadowAutoUpdate;
@@ -230,7 +300,15 @@ class Raymarcher extends Mesh {
 Raymarcher.sketchMode = {
   fullSketch: 0,
   ground: 1,
-  light: 2,
+  water: 2,
+  block: 3,
+  sink: 4,
+};
+
+Raymarcher.bufferRead = {
+  current: 0,
+  previous: 1,
+  targetm: 2,
 };
 
 export default Raymarcher;
