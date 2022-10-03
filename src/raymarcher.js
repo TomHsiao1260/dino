@@ -257,7 +257,7 @@ class Raymarcher extends Mesh {
         if (reset) { renderer.clear(); this.userData.reset = false; }
         renderer.render(sketch, camera);
         break;
-      case 1: case 2: case 3: case 4: // sand
+      case 1: case 2: case 3: case 4: case 5: // sand
         if (!renderScreenOnly) this.clock = 1.0 - this.clock;
 
         const t0 = (this.clock) ? sandTarget0 : sandTarget1;
@@ -299,10 +299,11 @@ class Raymarcher extends Mesh {
 
 Raymarcher.sketchMode = {
   fullSketch: 0,
-  ground: 1,
-  water: 2,
-  block: 3,
-  sink: 4,
+  creature: 1,
+  ground: 2,
+  water: 3,
+  block: 4,
+  sink: 5,
 };
 
 Raymarcher.bufferRead = {

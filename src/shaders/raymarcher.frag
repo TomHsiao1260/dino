@@ -26,10 +26,6 @@ uniform float delta;
 // size ratio is not correct (currently always 1)
 // simpler way to write getter & setter
 // accelerate the parameters generate & control process (abstraction)
-// ground detection may need to improve its performance
-// adding physics rule interface should be more straightforward
-
-// y axis are wrong
 
 void draw(inout vec4 color, in vec3 color_, in float phase, in vec2 center, in float size) {
   float intensity = 1.0;
@@ -42,18 +38,7 @@ void draw(inout vec4 color, in vec3 color_, in float phase, in vec2 center, in f
   //bool flip = false;
 
   float dispacement = mode * range / frame - range;
-  center.x += flip ? -dispacement : dispacement;
-
-  // float aspect = resolution.y / resolution.x;
-  // // performance may drop a lot because of this
-  // float height = 0.0;
-  // for(int j=0; j<30; ++j)
-  // {
-  //   float height_ = (30.0-float(j))/30.0;
-  //   vec4 cc = texture(sand, vec2((center.x+1.0)/2.0, (height_/aspect+1.0)/2.0));
-  //   if (cc.x > 0.1) { height = height_; break; }
-  // }
-  // center.y += height;
+  // center.x += flip ? -dispacement : dispacement;
 
   vec2 a = center - size / 2.0;
   vec2 b = center + size / 2.0;
@@ -116,13 +101,17 @@ void main() {
     case 0: // fullSketch
       fragColor = texture(sketch, uuvv);
       break;
-    case 1: case 2: case 3: case 4: // sand
+    case 1: case 2: case 3: case 4: case 5: // sand
       vec4 sandColor = texture(sand, uuvv);
+      float number = 100.0;
+      float s = 1.0 / number;
+      vec2 memory = vec2(0.5) - mod(vec2(0.5), s);
+      vec2 shift = vec2(0.5 * s);
 
-      for(int i=0; i<count; ++i)
+      for(int i=0; i<50; ++i)
       {
-        float r_position = fract(sin(float(i))*1235.0) - 0.5;
-        float r_size = fract(sin(float(i))*348.0) - 0.5;
+        // float r_position = fract(sin(float(i))*1235.0) - 0.5;
+        // float r_size = fract(sin(float(i))*348.0) - 0.5;
         float r_phase = fract(sin(float(i))*869.0) - 0.5;
 
         vec3 r_color;
@@ -130,12 +119,23 @@ void main() {
         r_color.g = fract(sin(float(i))*99.0) - 0.5;
         r_color.b = fract(sin(float(i))*761.0) - 0.5;
 
-        float s = size - r_size * 0.2;
-        vec2 p = center + vec2(r_position * 1.5, s/2.0);
+        // float s = size - r_size * 0.2;
+        // vec2 p = center + vec2(r_position * 1.5, s/2.0);
         float ph = r_phase;
         vec3 c = vec3(colorR, colorG, colorB) - r_color * delta;
 
-        draw(color, c, ph, p, s);
+        vec2 state;
+        state.x = (memory.x + float(i+1)* s) - mod((memory.x + float(i+1) * s), s);
+        state.y = memory.y;
+        state += shift;
+
+        vec4 pos = texture(sand, state).xyzw;
+        vec2 p;
+        p.x = pos.x * 2.0 - 1.0;
+        p.y = (pos.y * 2.0 - 1.0) * aspect + size / 2.0;
+
+        if (pos.w < 0.1) { break; }
+        draw(color, c, ph, p, size);
       }
 
       fragColor = (color.x > 0.0) ? color : sandColor;
