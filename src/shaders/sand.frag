@@ -34,16 +34,27 @@ void main() {
 
   vec4 ref0, ref1, ref2, ref3, ref4, ref5, ref6, ref7, ref8;
   vec4 ref00, ref11, ref22, ref33, ref44, ref55, ref66, ref77, ref88;
+  vec2 s0, s1, s2, s3, s4, s5, s6, s7, s8;
 
-  ref0 = texture(colorTexture, vec2(grid.x + 0.0 * s, grid.y + 0.0 * s));
-  ref1 = texture(colorTexture, vec2(grid.x + 0.0 * s, grid.y + 1.0 * s));
-  ref2 = texture(colorTexture, vec2(grid.x + 1.0 * s, grid.y + 1.0 * s));
-  ref3 = texture(colorTexture, vec2(grid.x - 1.0 * s, grid.y + 1.0 * s));
-  ref4 = texture(colorTexture, vec2(grid.x + 0.0 * s, grid.y - 1.0 * s));
-  ref5 = texture(colorTexture, vec2(grid.x + 1.0 * s, grid.y - 1.0 * s));
-  ref6 = texture(colorTexture, vec2(grid.x - 1.0 * s, grid.y - 1.0 * s));
-  ref7 = texture(colorTexture, vec2(grid.x + 1.0 * s, grid.y + 0.0 * s));
-  ref8 = texture(colorTexture, vec2(grid.x - 1.0 * s, grid.y + 0.0 * s));
+  s0 = vec2(0.0, 0.0) * s;
+  s1 = vec2(0.0, 1.0) * s;
+  s2 = vec2(1.0, 1.0) * s;
+  s3 = vec2(-1.0, 1.0) * s;
+  s4 = vec2(0.0, -1.0) * s;
+  s5 = vec2(1.0, -1.0) * s;
+  s6 = vec2(-1.0, -1.0) * s;
+  s7 = vec2(1.0, 0.0) * s;
+  s8 = vec2(-1.0, 0.0) * s;
+
+  ref0 = texture(colorTexture, grid + s0);
+  ref1 = texture(colorTexture, grid + s1);
+  ref2 = texture(colorTexture, grid + s2);
+  ref3 = texture(colorTexture, grid + s3);
+  ref4 = texture(colorTexture, grid + s4);
+  ref5 = texture(colorTexture, grid + s5);
+  ref6 = texture(colorTexture, grid + s6);
+  ref7 = texture(colorTexture, grid + s7);
+  ref8 = texture(colorTexture, grid + s8);
 
   fragColor = ref0;
   
@@ -93,15 +104,15 @@ void main() {
   float ee = grid.x - m.x;
   if (m.y == grid.y && ee < (0.5 * s + sc) && ee > 0.0) { connect = true; grid = ref0.xy; }
 
-  ref00 = texture(mmTexture, vec2(grid.x + 0.0 * s, grid.y + 0.0 * s));
-  ref11 = texture(mmTexture, vec2(grid.x + 0.0 * s, grid.y + 1.0 * s));
-  ref22 = texture(mmTexture, vec2(grid.x + 1.0 * s, grid.y + 1.0 * s));
-  ref33 = texture(mmTexture, vec2(grid.x - 1.0 * s, grid.y + 1.0 * s));
-  ref44 = texture(mmTexture, vec2(grid.x + 0.0 * s, grid.y - 1.0 * s));
-  ref55 = texture(mmTexture, vec2(grid.x + 1.0 * s, grid.y - 1.0 * s));
-  ref66 = texture(mmTexture, vec2(grid.x - 1.0 * s, grid.y - 1.0 * s));
-  ref77 = texture(mmTexture, vec2(grid.x + 1.0 * s, grid.y + 0.0 * s));
-  ref88 = texture(mmTexture, vec2(grid.x - 1.0 * s, grid.y + 0.0 * s));
+  ref00 = texture(mmTexture, grid + s0);
+  ref11 = texture(mmTexture, grid + s1);
+  ref22 = texture(mmTexture, grid + s2);
+  ref33 = texture(mmTexture, grid + s3);
+  ref44 = texture(mmTexture, grid + s4);
+  ref55 = texture(mmTexture, grid + s5);
+  ref66 = texture(mmTexture, grid + s6);
+  ref77 = texture(mmTexture, grid + s7);
+  ref88 = texture(mmTexture, grid + s8);
 
   float pressure = ref1.y;
   float density = ref1.z;
@@ -109,34 +120,34 @@ void main() {
   if (uuvv.y < 0.4) { fragColor.y = pressure; }
 
   if (ref00.x > 0.1 && ref00.x < 0.2 && ref11.x > 0.0 && ref11.x < 0.1) {
-    next = vec2(ref0.x, ref0.y + s) - mod(vec2(ref0.x, ref0.y + s), s) + shift;
+    next = ref0.xy + s1 - mod(ref0.xy + s1, s) + shift;
     if (!connect) { fragColor = ref1; fragColor.y = ref0.y; return; }
     if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
   }
   if (ref00.x > 0.0 && ref00.x < 0.1 && ref44.x > 0.1 && ref44.x < 0.2) {
-    next = vec2(ref0.x, ref0.y - s) - mod(vec2(ref0.x, ref0.y - s), s) + shift;
+    next = ref0.xy + s4 - mod(ref0.xy + s4, s) + shift;
     if (!connect) { fragColor = ref4; fragColor.y = ref0.y; return; }
     if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
   }
 
   if (ref00.x > 0.3 && ref00.x < 0.4 && ref33.x > 0.2 && ref33.x < 0.3) {
-    next = vec2(ref0.x - s, ref0.y + s) - mod(vec2(ref0.x - s, ref0.y + s), s) + shift;
+    next = ref0.xy + s3 - mod(ref0.xy + s3, s) + shift;
     if (!connect) { fragColor = ref3; fragColor.y = ref0.y; return; }
     if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
   }
   if (ref00.x > 0.2 && ref00.x < 0.3 && ref55.x > 0.3 && ref55.x < 0.4) {
-    next = vec2(ref0.x + s, ref0.y - s) - mod(vec2(ref0.x + s, ref0.y - s), s) + shift;
+    next = ref0.xy + s5 - mod(ref0.xy + s5, s) + shift;
     if (!connect) { fragColor = ref5; fragColor.y = ref0.y; return; }
     if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
   }
 
   if (ref00.x > 0.5 && ref00.x < 0.6 && ref22.x > 0.4 && ref22.x < 0.5) {
-    next = vec2(ref0.x + s, ref0.y + s) - mod(vec2(ref0.x + s, ref0.y + s), s) + shift;
+    next = ref0.xy + s2 - mod(ref0.xy + s2, s) + shift;
     if (!connect) { fragColor = ref2; fragColor.y = ref0.y; return; }
     if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
   }
   if (ref00.x > 0.4 && ref00.x < 0.5 && ref66.x > 0.5 && ref66.x < 0.6) {
-    next = vec2(ref0.x - s, ref0.y - s) - mod(vec2(ref0.x - s, ref0.y - s), s) + shift;
+    next = ref0.xy + s6 - mod(ref0.xy + s6, s) + shift;
     if (!connect) { fragColor = ref6; fragColor.y = ref0.y; return; }
     if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
   }

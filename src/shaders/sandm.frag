@@ -15,20 +15,32 @@ void main() {
   uuvv.x = (uv.x + 1.0) / 2.0;
   uuvv.y = (uv.y / aspect + 1.0) / 2.0;
 
-  vec2 grid = uuvv - mod(uuvv, 1.0 / number);
+  float s = 1.0 / number;
+  vec2 shift = vec2(0.5 * s);
+  vec2 grid = uuvv - mod(uuvv, s) + shift;
 
-  vec2 shift = vec2(0.5 / number);
   vec4 ref0, ref1, ref2, ref3, ref4, ref5, ref6, ref7, ref8;
+  vec2 s0, s1, s2, s3, s4, s5, s6, s7, s8;
 
-  ref0 = texture(colorTexture, vec2(grid.x + shift.x + 0.0 / number, grid.y + shift.y + 0.0 / number));
-  ref1 = texture(colorTexture, vec2(grid.x + shift.x + 0.0 / number, grid.y + shift.y + 1.0 / number));
-  ref2 = texture(colorTexture, vec2(grid.x + shift.x + 1.0 / number, grid.y + shift.y + 1.0 / number));
-  ref3 = texture(colorTexture, vec2(grid.x + shift.x - 1.0 / number, grid.y + shift.y + 1.0 / number));
-  ref4 = texture(colorTexture, vec2(grid.x + shift.x + 0.0 / number, grid.y + shift.y - 1.0 / number));
-  ref5 = texture(colorTexture, vec2(grid.x + shift.x + 1.0 / number, grid.y + shift.y - 1.0 / number));
-  ref6 = texture(colorTexture, vec2(grid.x + shift.x - 1.0 / number, grid.y + shift.y - 1.0 / number));
-  ref7 = texture(colorTexture, vec2(grid.x + shift.x + 1.0 / number, grid.y + shift.y + 0.0 / number));
-  ref8 = texture(colorTexture, vec2(grid.x + shift.x - 1.0 / number, grid.y + shift.y + 0.0 / number));
+  s0 = vec2(0.0, 0.0) * s;
+  s1 = vec2(0.0, 1.0) * s;
+  s2 = vec2(1.0, 1.0) * s;
+  s3 = vec2(-1.0, 1.0) * s;
+  s4 = vec2(0.0, -1.0) * s;
+  s5 = vec2(1.0, -1.0) * s;
+  s6 = vec2(-1.0, -1.0) * s;
+  s7 = vec2(1.0, 0.0) * s;
+  s8 = vec2(-1.0, 0.0) * s;
+
+  ref0 = texture(colorTexture, grid + s0);
+  ref1 = texture(colorTexture, grid + s1);
+  ref2 = texture(colorTexture, grid + s2);
+  ref3 = texture(colorTexture, grid + s3);
+  ref4 = texture(colorTexture, grid + s4);
+  ref5 = texture(colorTexture, grid + s5);
+  ref6 = texture(colorTexture, grid + s6);
+  ref7 = texture(colorTexture, grid + s7);
+  ref8 = texture(colorTexture, grid + s8);
 
   vec2 helper = vec2(0.0);
   float maxIndex = 0.0;
