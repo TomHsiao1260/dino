@@ -138,7 +138,14 @@ void main() {
         draw(color, c, ph, p, size);
       }
 
+      vec4 sceneColor;
+      // ground
+      if (sandColor.x > 0.0 && sandColor.x < 0.7) { sceneColor = vec4(0.0, 0.5, 0.2, 1.0); }
+      // water
+      if (sandColor.x > 0.7) { sceneColor = vec4(0.0, 0.3, 0.6, 1.0); }
+
       fragColor = (color.x > 0.0) ? color : sandColor;
+      // fragColor = (color.x > 0.0) ? color : sceneColor;
       break;
   }
 }

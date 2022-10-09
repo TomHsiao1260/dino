@@ -68,7 +68,7 @@ class Raymarcher extends Mesh {
         dino: { value: dino },
         sketch: { value: sketchTarget.texture },
         sand: { value: sandTarget0.texture },
-        sketchMode: { value: 1 },
+        sketchMode: { value: 2 },
         center: { value: new Vector2(0.0, -0.55) },
         colorR: { value: 0.5 },
         colorG: { value: 0.5 },
@@ -88,7 +88,7 @@ class Raymarcher extends Mesh {
       fragmentShader: sandFragment,
       uniforms: {
         bufferRead: { value: 0 },
-        sketchMode: { value: 1 },
+        sketchMode: { value: 2 },
         bufferRead: { value: 0 },
         resolution: { value: new Vector2() },
         mouse: { value: new Vector2(-1, -1) },
@@ -102,6 +102,7 @@ class Raymarcher extends Mesh {
       vertexShader: sandmVertex,
       fragmentShader: sandmFragment,
       uniforms: {
+        time: { value: 0 },
         colorTexture: { value: sandTarget0.texture },
         resolution: { value: new Vector2() },
       },
@@ -124,6 +125,7 @@ class Raymarcher extends Mesh {
       },
       set time(value) {
         uniforms.time.value = value;
+        msandm.uniforms.time.value = value;
       },
       get size() {
         return uniforms.size.value;

@@ -2,6 +2,7 @@ precision highp float;
 precision highp int;
 
 uniform vec2 resolution;
+uniform float time;
 out vec4 fragColor;
 in vec2 uv;
 uniform sampler2D colorTexture;
@@ -49,6 +50,9 @@ void main() {
   // block (element: 1.0)
   if (ref0.z > 0.9) { fragColor = vec4(0.0, 0.0, 0.0, 1.0); return; }
 
+  if (abs(ref0.z - ref7.z) > 0.05 && abs(ref0.y - ref7.y) > 0.5 && ref7.z < 0.9) { maxIndex = 0.65; helper.x = 0.5; helper.y = 0.5; }
+  if (abs(ref0.z - ref8.z) > 0.05 && abs(ref0.y - ref8.y) > 0.5 && ref8.z < 0.9) { maxIndex = 0.75; helper.x = 0.5; helper.y = 0.5; }
+
   if ((ref0.z - ref4.z) > maxDiff && ref4.z < 0.9) { maxDiff = ref0.z - ref4.z; maxIndex = 0.05; helper.x = 0.5; }
   if ((ref1.z - ref0.z) > maxDiff && ref1.z < 0.9) { maxDiff = ref1.z - ref0.z; maxIndex = 0.15; helper.x = 0.5; }
 
@@ -57,6 +61,9 @@ void main() {
 
   if ((ref0.z - ref6.z) * 0.9 > maxDiff && ref6.z < 0.9) { maxDiff = (ref0.z - ref6.z) * 0.9; maxIndex = 0.45; }
   if ((ref2.z - ref0.z) * 0.9 > maxDiff && ref2.z < 0.9) { maxDiff = (ref2.z - ref0.z) * 0.9; maxIndex = 0.55; }
+
+  // if ((ref0.z - ref7.z) * 0.8 > maxDiff && ref7.z < 0.9) { maxDiff = (ref0.z - ref7.z) * 0.8; maxIndex = 0.65; }
+  // if ((ref0.z - ref8.z) * 0.8 > maxDiff && ref8.z < 0.9) { maxDiff = (ref0.z - ref8.z) * 0.8; maxIndex = 0.75; }
 
   fragColor = vec4(maxIndex, 0.0, 0.0, 1.0);
   fragColor.yz = helper;
