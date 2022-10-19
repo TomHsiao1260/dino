@@ -10,6 +10,7 @@ uniform float size;
 uniform int count;
 uniform vec2 center;
 uniform int sketchMode;
+uniform int bufferRead;
 uniform sampler2D dino;
 uniform sampler2D sketch;
 uniform sampler2D sand;
@@ -102,7 +103,6 @@ void main() {
       fragColor = texture(sketch, uuvv);
       break;
     case 1: case 2: case 3: case 4: case 5: // sand
-      vec4 sandColor = texture(sand, uuvv);
       float number = 100.0;
       float s = 1.0 / number;
       vec2 memory = vec2(0.5) - mod(vec2(0.5), s);
@@ -138,14 +138,27 @@ void main() {
         draw(color, c, ph, p, size);
       }
 
-      vec4 sceneColor;
-      // ground
-      if (sandColor.x > 0.0 && sandColor.x < 0.7) { sceneColor = vec4(0.0, 0.5, 0.2, 1.0); }
-      // water
-      if (sandColor.x > 0.7) { sceneColor = vec4(0.0, 0.3, 0.6, 1.0); }
+      vec4 sceneColor = vec4(0.0);
 
-      fragColor = (color.x > 0.0) ? color : sandColor;
-      // fragColor = (color.x > 0.0) ? color : sceneColor;
+      switch (bufferRead) {
+        default:
+        case 0: // normal
+          vec2 cell = uuvv - mod(uuvv, s) + vec2(s, s) / 4.0;
+          vec4 ref0 = texture(sand, cell);
+
+          // block
+          if (ref0.x > 0.15) { sceneColor = vec4(0.3, 0.3, 0.3, 1.0); }
+          // water
+          if (ref0.x > 0.25) { sceneColor = vec4(0.0, 0.3, 0.6, 1.0); }
+          // ground
+          if (ref0.x > 0.35) { sceneColor = vec4(0.0, 0.6, 0.3, 1.0); }
+        break;
+        case 1: case 2: case 3: // pure data
+          sceneColor = texture(sand, uuvv);
+        break;
+      }
+
+      fragColor = (color.x > 0.0) ? color : sceneColor;
       break;
   }
 }

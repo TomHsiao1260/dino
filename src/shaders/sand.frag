@@ -77,16 +77,17 @@ void main() {
   if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s0); }
   if (e3 < s * 0.1) { fragColor = texture(colorTexture, g3 + s0); }
 
-  if (uuvv.y < s) { fragColor = vec4(1.0, 1.0, 1.0, 0.0); return; }
+  if (uuvv.y < s) { fragColor = vec4(0.0, 1.0, 1.0, 0.0); return; }
 
   vec2 m = vec2(0.5) - mod(vec2(0.5), s);
   vec4 state = texture(colorTexture, m + c0 + f0);
 
-  // vec4(constraint, pressure, density, opacity)
+  // vec4(color, pressure, density, opacity)
+  // vec4(top-down, left-right, else, opacity) contraint
   if (grid == target) {
     // creature
     if (sketchMode == 1 && state.y < 0.1) {
-      if (e0 < s * 0.1) { fragColor = vec4(0.5, 0.0, 0.3, 1.0); return; }
+      if (e0 < s * 0.1) { fragColor = vec4(0.0, 0.0, 0.3, 1.0); return; }
       if (e1 < s * 0.1) { fragColor = vec4(0.0); return; }
       if (e2 < s * 0.1) { fragColor = vec4(0.0); return; }
       if (e3 < s * 0.1) { fragColor = vec4(0.0); return; }
@@ -94,7 +95,7 @@ void main() {
     // ground
     if (sketchMode == 2) {
       float seed = random(time + grid);
-      if (e0 < s * 0.1) { fragColor = vec4(0.7, 0.0, 0.5, 1.0); return; }
+      if (e0 < s * 0.1) { fragColor = vec4(0.4, 0.0, 0.5, 1.0); return; }
       if (e1 < s * 0.1) { fragColor = vec4(0.0, 1.0, 0.0, 1.0); return; }
       // if (e1 < s * 0.1) { fragColor = vec4(0.0, 1.0, seed, 1.0); return; }
       if (e2 < s * 0.1) { fragColor = vec4(0.0); return; }
@@ -102,14 +103,14 @@ void main() {
     }
     // water
     if (sketchMode == 3) {
-      if (e0 < s * 0.1) { fragColor = vec4(0.5, 0.0, 0.1, 1.0); return; }
+      if (e0 < s * 0.1) { fragColor = vec4(0.3, 0.0, 0.1, 1.0); return; }
       if (e1 < s * 0.1) { fragColor = vec4(0.0, 0.0, 0.0, 1.0); return; }
       if (e2 < s * 0.1) { fragColor = vec4(0.0); return; }
       if (e3 < s * 0.1) { fragColor = vec4(0.0); return; }
     }
     // block
     if (sketchMode == 4) {
-      if (e0 < s * 0.1) { fragColor = vec4(1.0, 0.0, 1.0, 1.0); return; }
+      if (e0 < s * 0.1) { fragColor = vec4(0.2, 0.0, 1.0, 1.0); return; }
       if (e1 < s * 0.1) { fragColor = vec4(1.0); return; }
       if (e2 < s * 0.1) { fragColor = vec4(0.0); return; }
       if (e3 < s * 0.1) { fragColor = vec4(0.0); return; }

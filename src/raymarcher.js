@@ -69,6 +69,7 @@ class Raymarcher extends Mesh {
         sketch: { value: sketchTarget.texture },
         sand: { value: sandTarget0.texture },
         sketchMode: { value: 2 },
+        bufferRead: { value: 0 },
         center: { value: new Vector2(0.0, -0.55) },
         colorR: { value: 0.5 },
         colorG: { value: 0.5 },
@@ -90,7 +91,6 @@ class Raymarcher extends Mesh {
         time: { value: 0 },
         bufferRead: { value: 0 },
         sketchMode: { value: 2 },
-        bufferRead: { value: 0 },
         resolution: { value: new Vector2() },
         mouse: { value: new Vector2(-1, -1) },
         colorTexture: { value: sandTarget0.texture },
@@ -189,6 +189,7 @@ class Raymarcher extends Mesh {
         return Object.keys(Raymarcher.bufferRead)[msand.uniforms.bufferRead.value];
       },
       set bufferRead(value) {
+        material.uniforms.bufferRead.value = Raymarcher.bufferRead[value];
         msand.uniforms.bufferRead.value = Raymarcher.bufferRead[value];
       },
       resolution: 1,
@@ -280,8 +281,9 @@ class Raymarcher extends Mesh {
         }
 
         if (sandmesh.material.uniforms.bufferRead.value === 0) raymarcher.material.uniforms.sand.value = t1.texture;
-        if (sandmesh.material.uniforms.bufferRead.value === 1) raymarcher.material.uniforms.sand.value = t0.texture;
-        if (sandmesh.material.uniforms.bufferRead.value === 2) raymarcher.material.uniforms.sand.value = sandTargetm.texture;
+        if (sandmesh.material.uniforms.bufferRead.value === 1) raymarcher.material.uniforms.sand.value = t1.texture;
+        if (sandmesh.material.uniforms.bufferRead.value === 2) raymarcher.material.uniforms.sand.value = t0.texture;
+        if (sandmesh.material.uniforms.bufferRead.value === 3) raymarcher.material.uniforms.sand.value = sandTargetm.texture;
 
         break;
       default:
@@ -311,9 +313,10 @@ Raymarcher.sketchMode = {
 };
 
 Raymarcher.bufferRead = {
-  current: 0,
-  previous: 1,
-  targetm: 2,
+  normal: 0,
+  current: 1,
+  previous: 2,
+  targetm: 3,
 };
 
 export default Raymarcher;
