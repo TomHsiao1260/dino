@@ -87,6 +87,7 @@ class Raymarcher extends Mesh {
       vertexShader: sandVertex,
       fragmentShader: sandFragment,
       uniforms: {
+        time: { value: 0 },
         bufferRead: { value: 0 },
         sketchMode: { value: 2 },
         bufferRead: { value: 0 },
@@ -125,6 +126,7 @@ class Raymarcher extends Mesh {
       },
       set time(value) {
         uniforms.time.value = value;
+        msand.uniforms.time.value = value;
         msandm.uniforms.time.value = value;
       },
       get size() {

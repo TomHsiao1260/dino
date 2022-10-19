@@ -5,6 +5,7 @@ uniform vec2 resolution;
 uniform int sketchMode;
 
 out vec4 fragColor;
+uniform float time;
 in vec2 uv;
 
 // To Do
@@ -20,8 +21,13 @@ uniform sampler2D mmTexture;
 
 #define texture2D texture
 
+float random (vec2 st) {
+  vec2 t = vec2(12.9898,78.233);
+  return fract(sin(dot(st.xy,t))*43758.5453123);
+}
+
 void main() {
-  float number = 30.0;
+  float number = 100.0;
   float aspect = resolution.y / resolution.x;
   float s = 1.0 / number;
 
@@ -71,7 +77,7 @@ void main() {
   if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s0); }
   if (e3 < s * 0.1) { fragColor = texture(colorTexture, g3 + s0); }
 
-  if (uuvv.y < s) { fragColor = vec4(0.0, 0.0, 1.0, 0.0); return; }
+  if (uuvv.y < s) { fragColor = vec4(1.0, 1.0, 1.0, 0.0); return; }
 
   vec2 m = vec2(0.5) - mod(vec2(0.5), s);
   vec4 state = texture(colorTexture, m + c0 + f0);
@@ -87,28 +93,30 @@ void main() {
     }
     // ground
     if (sketchMode == 2) {
+      float seed = random(time + grid);
       if (e0 < s * 0.1) { fragColor = vec4(0.7, 0.0, 0.5, 1.0); return; }
-      if (e1 < s * 0.1) { fragColor = vec4(0.0); return; }
+      if (e1 < s * 0.1) { fragColor = vec4(0.0, 1.0, 0.0, 1.0); return; }
+      // if (e1 < s * 0.1) { fragColor = vec4(0.0, 1.0, seed, 1.0); return; }
       if (e2 < s * 0.1) { fragColor = vec4(0.0); return; }
       if (e3 < s * 0.1) { fragColor = vec4(0.0); return; }
     }
     // water
     if (sketchMode == 3) {
       if (e0 < s * 0.1) { fragColor = vec4(0.5, 0.0, 0.1, 1.0); return; }
-      if (e1 < s * 0.1) { fragColor = vec4(0.0); return; }
+      if (e1 < s * 0.1) { fragColor = vec4(0.0, 0.0, 0.0, 1.0); return; }
       if (e2 < s * 0.1) { fragColor = vec4(0.0); return; }
       if (e3 < s * 0.1) { fragColor = vec4(0.0); return; }
     }
     // block
     if (sketchMode == 4) {
       if (e0 < s * 0.1) { fragColor = vec4(1.0, 0.0, 1.0, 1.0); return; }
-      if (e1 < s * 0.1) { fragColor = vec4(0.0); return; }
+      if (e1 < s * 0.1) { fragColor = vec4(1.0); return; }
       if (e2 < s * 0.1) { fragColor = vec4(0.0); return; }
       if (e3 < s * 0.1) { fragColor = vec4(0.0); return; }
     }
     // sink
     if (sketchMode == 5) {
-      if (e0 < s * 0.1) { fragColor = vec4(0.0, 0.0, 0.0, 0.0); return; }
+      if (e0 < s * 0.1) { fragColor = vec4(0.0); return; }
       if (e1 < s * 0.1) { fragColor = vec4(0.0); return; }
       if (e2 < s * 0.1) { fragColor = vec4(0.0); return; }
       if (e3 < s * 0.1) { fragColor = vec4(0.0); return; }
@@ -173,60 +181,60 @@ void main() {
     // if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
   }
 
-  // if (ref00.x > 0.3 && ref00.x < 0.4 && ref33.x > 0.2 && ref33.x < 0.3) {
-  //   next = ref0.xy + s3 - mod(ref0.xy + s3, s) + c0 + f0;
-  //   if (!connect) {
-  //     if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s3); return; }
-  //     if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s3); return; }
-  //     if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s3); return; }
-  //   }
-  //   if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
-  // }
-  // if (ref00.x > 0.2 && ref00.x < 0.3 && ref55.x > 0.3 && ref55.x < 0.4) {
-  //   next = ref0.xy + s5 - mod(ref0.xy + s5, s) + c0 + f0;
-  //   if (!connect) {
-  //     if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s5); return; }
-  //     if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s5); return; }
-  //     if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s5); return; }
-  //   }
-  //   if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
-  // }
+  if (ref00.x > 0.3 && ref00.x < 0.4 && ref33.x > 0.2 && ref33.x < 0.3) {
+    // next = ref0.xy + s3 - mod(ref0.xy + s3, s) + c0 + f0;
+    if (!connect) {
+      if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s3); return; }
+      if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s3); return; }
+      if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s3); return; }
+    }
+    // if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
+  }
+  if (ref00.x > 0.2 && ref00.x < 0.3 && ref55.x > 0.3 && ref55.x < 0.4) {
+    // next = ref0.xy + s5 - mod(ref0.xy + s5, s) + c0 + f0;
+    if (!connect) {
+      if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s5); return; }
+      if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s5); return; }
+      if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s5); return; }
+    }
+    // if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
+  }
 
-  // if (ref00.x > 0.5 && ref00.x < 0.6 && ref22.x > 0.4 && ref22.x < 0.5) {
-  //   next = ref0.xy + s2 - mod(ref0.xy + s2, s) + c0 + f0;
-  //   if (!connect) {
-  //     if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s2); return; }
-  //     if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s2); return; }
-  //     if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s2); return; }
-  //   }
-  //   if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
-  // }
-  // if (ref00.x > 0.4 && ref00.x < 0.5 && ref66.x > 0.5 && ref66.x < 0.6) {
-  //   next = ref0.xy + s6 - mod(ref0.xy + s6, s) + c0 + f0;
-  //   if (!connect) {
-  //     if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s6); return; }
-  //     if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s6); return; }
-  //     if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s6); return; }
-  //   }
-  //   if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
-  // }
+  if (ref00.x > 0.5 && ref00.x < 0.6 && ref22.x > 0.4 && ref22.x < 0.5) {
+    // next = ref0.xy + s2 - mod(ref0.xy + s2, s) + c0 + f0;
+    if (!connect) {
+      if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s2); return; }
+      if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s2); return; }
+      if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s2); return; }
+    }
+    // if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
+  }
+  if (ref00.x > 0.4 && ref00.x < 0.5 && ref66.x > 0.5 && ref66.x < 0.6) {
+    // next = ref0.xy + s6 - mod(ref0.xy + s6, s) + c0 + f0;
+    if (!connect) {
+      if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s6); return; }
+      if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s6); return; }
+      if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s6); return; }
+    }
+    // if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
+  }
 
-  // if (ref00.x > 0.7 && ref00.x < 0.8 && ref88.x > 0.6 && ref88.x < 0.7) {
-  //   next = ref0.xy + s8 - mod(ref0.xy + s8, s) + f0;
-  //   if (!connect) {
-  //     if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s8); return; }
-  //     if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s8); return; }
-  //     if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s8); return; }
-  //   }
-  //   if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
-  // }
-  // if (ref00.x > 0.6 && ref00.x < 0.7 && ref77.x > 0.7 && ref77.x < 0.8) {
-  //   next = ref0.xy + s7 - mod(ref0.xy + s7, s) + f0;
-  //   if (!connect) {
-  //     if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s7); return; }
-  //     if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s7); return; }
-  //     if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s7); return; }
-  //   }
-  //   if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
-  // }
+  if (ref00.x > 0.7 && ref00.x < 0.8 && ref88.x > 0.6 && ref88.x < 0.7) {
+    // next = ref0.xy + s8 - mod(ref0.xy + s8, s) + f0;
+    if (!connect) {
+      if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s8); return; }
+      if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s8); return; }
+      if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s8); return; }
+    }
+    // if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
+  }
+  if (ref00.x > 0.6 && ref00.x < 0.7 && ref77.x > 0.7 && ref77.x < 0.8) {
+    // next = ref0.xy + s7 - mod(ref0.xy + s7, s) + f0;
+    if (!connect) {
+      if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s7); return; }
+      if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s7); return; }
+      if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s7); return; }
+    }
+    // if (connect) { fragColor = vec4(next, 1.0, 1.0); return; }
+  }
 }
