@@ -106,7 +106,7 @@ void main() {
       float number = 100.0;
       float s = 1.0 / number;
       vec2 memory = vec2(0.5) - mod(vec2(0.5), s);
-      vec2 shift = vec2(0.5 * s);
+      vec2 c0 = vec2(1.0, 1.0) * s / 4.0;
 
       for(int i=0; i<50; ++i)
       {
@@ -125,9 +125,9 @@ void main() {
         vec3 c = vec3(colorR, colorG, colorB) - r_color * delta;
 
         vec2 state;
-        state.x = (memory.x + float(i+1)* s) - mod((memory.x + float(i+1) * s), s);
+        state.x = (memory.x + float(i+1) * s) - mod((memory.x + float(i+1) * s), s);
         state.y = memory.y;
-        state += shift;
+        state += c0;
 
         vec4 pos = texture(sand, state).xyzw;
         vec2 p;
