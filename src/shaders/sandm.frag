@@ -29,13 +29,13 @@ void main() {
 
   s0 = vec2(+0.0, +0.0) * s;
   s1 = vec2(+0.0, +1.0) * s;
-  s2 = vec2(+1.0, +1.0) * s;
-  s3 = vec2(-1.0, +1.0) * s;
-  s4 = vec2(+0.0, -1.0) * s;
-  s5 = vec2(+1.0, -1.0) * s;
-  s6 = vec2(-1.0, -1.0) * s;
-  s7 = vec2(+1.0, +0.0) * s;
-  s8 = vec2(-1.0, +0.0) * s;
+  s2 = vec2(+0.0, -1.0) * s;
+  s3 = vec2(-1.0, +0.0) * s;
+  s4 = vec2(+1.0, +0.0) * s;
+  s5 = vec2(-1.0, +1.0) * s;
+  s6 = vec2(+1.0, -1.0) * s;
+  s7 = vec2(+1.0, +1.0) * s;
+  s8 = vec2(-1.0, -1.0) * s;
 
   f0 = vec2(0.0, 0.0) * s / 2.0;
   f1 = vec2(1.0, 0.0) * s / 2.0;
@@ -73,17 +73,17 @@ void main() {
   float maxIndex = 0.0;
   float maxDiff = 0.0;
 
-  if (abs(ref0.z - ref7.z) > 0.01 && ref0a.y < 0.5 && ref7a.y < 0.5) { maxIndex = 0.65; }
-  if (abs(ref0.z - ref8.z) > 0.01 && ref0a.y < 0.5 && ref8a.y < 0.5) { maxIndex = 0.75; }
+  if (abs(ref0.z - ref3.z) * (1.0 - ref0a.y) * (1.0 - ref3a.y) > 0.01) { maxIndex = 0.05; }
+  if (abs(ref0.z - ref4.z) * (1.0 - ref0a.y) * (1.0 - ref4a.y) > 0.01) { maxIndex = 0.15; }
 
-  if ((ref0.z - ref4.z) > maxDiff && ref0a.x < 0.5 && ref4a.x < 0.5) { maxDiff = ref0.z - ref4.z; maxIndex = 0.05; helper.x = 0.5; }
-  if ((ref1.z - ref0.z) > maxDiff && ref0a.x < 0.5 && ref1a.x < 0.5) { maxDiff = ref1.z - ref0.z; maxIndex = 0.15; helper.x = 0.5; }
+  if ((ref1.z - ref0.z) * (1.0 - ref0a.x) * (1.0 - ref1a.x) > maxDiff) { maxDiff = (ref1.z - ref0.z) * (1.0 - ref0a.x) * (1.0 - ref1a.x); maxIndex = 0.25; helper.x = 0.5; }
+  if ((ref0.z - ref2.z) * (1.0 - ref0a.x) * (1.0 - ref2a.x) > maxDiff) { maxDiff = (ref0.z - ref2.z) * (1.0 - ref0a.x) * (1.0 - ref2a.x); maxIndex = 0.35; helper.x = 0.5; }
 
-  if ((ref0.z - ref5.z) * 0.9 > maxDiff && ref0a.z < 0.5 && ref5a.z < 0.5) { maxDiff = (ref0.z - ref5.z) * 0.9; maxIndex = 0.25; helper.y = 0.5; }
-  if ((ref3.z - ref0.z) * 0.9 > maxDiff && ref0a.z < 0.5 && ref3a.z < 0.5) { maxDiff = (ref3.z - ref0.z) * 0.9; maxIndex = 0.35; helper.y = 0.5; }
+  if ((ref5.z - ref0.z) * 0.9 * (1.0 - ref0a.z) * (1.0 - ref5a.z) > maxDiff) { maxDiff = (ref5.z - ref0.z) * 0.9 * (1.0 - ref0a.z) * (1.0 - ref5a.z); maxIndex = 0.45; helper.y = 0.5; }
+  if ((ref0.z - ref6.z) * 0.9 * (1.0 - ref0a.z) * (1.0 - ref6a.z) > maxDiff) { maxDiff = (ref0.z - ref6.z) * 0.9 * (1.0 - ref0a.z) * (1.0 - ref6a.z); maxIndex = 0.55; helper.y = 0.5; }
 
-  if ((ref0.z - ref6.z) * 0.9 > maxDiff && ref0a.z < 0.5 && ref6a.z < 0.5) { maxDiff = (ref0.z - ref6.z) * 0.9; maxIndex = 0.45; }
-  if ((ref2.z - ref0.z) * 0.9 > maxDiff && ref0a.z < 0.5 && ref2a.z < 0.5) { maxDiff = (ref2.z - ref0.z) * 0.9; maxIndex = 0.55; }
+  if ((ref7.z - ref0.z) * 0.9 * (1.0 - ref0a.z) * (1.0 - ref7a.z) > maxDiff) { maxDiff = (ref7.z - ref0.z) * 0.9 * (1.0 - ref0a.z) * (1.0 - ref7a.z); maxIndex = 0.65; }
+  if ((ref0.z - ref8.z) * 0.9 * (1.0 - ref0a.z) * (1.0 - ref8a.z) > maxDiff) { maxDiff = (ref0.z - ref8.z) * 0.9 * (1.0 - ref0a.z) * (1.0 - ref8a.z); maxIndex = 0.75; }
 
   fragColor = vec4(maxIndex, 0.0, 0.0, 1.0);
   fragColor.yz = helper;

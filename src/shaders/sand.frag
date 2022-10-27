@@ -27,6 +27,72 @@ float random (vec2 st) {
   return fract(sin(dot(st.xy,t))*43758.5453123);
 }
 
+vec4 result (vec2 direction) {
+  float number = 100.0;
+  float aspect = resolution.y / resolution.x;
+  float s = 1.0 / number;
+
+  vec2 uuvv;
+  vec2 s0, s1, s2, s3, s4, s5, s6, s7, s8;
+  vec2 f0, f1, f2, f3;
+  vec2 g0, g1, g2, g3;
+  vec2 c0;
+
+  uuvv.x = (uv.x + 1.0) / 2.0;
+  uuvv.y = (uv.y / aspect + 1.0) / 2.0;
+
+  vec2 grid = uuvv - mod(uuvv, s);
+  vec2 cell = uuvv - mod(uuvv, s / 2.0);
+
+  s0 = vec2(+0.0, +0.0) * s;
+  s1 = vec2(+0.0, +1.0) * s;
+  s2 = vec2(+0.0, -1.0) * s;
+  s3 = vec2(-1.0, +0.0) * s;
+  s4 = vec2(+1.0, +0.0) * s;
+  s5 = vec2(-1.0, +1.0) * s;
+  s6 = vec2(+1.0, -1.0) * s;
+  s7 = vec2(+1.0, +1.0) * s;
+  s8 = vec2(-1.0, -1.0) * s;
+
+  f0 = vec2(0.0, 0.0) * s / 2.0;
+  f1 = vec2(1.0, 0.0) * s / 2.0;
+  f2 = vec2(0.0, 1.0) * s / 2.0;
+  f3 = vec2(1.0, 1.0) * s / 2.0;
+
+  c0 = vec2(1.0, 1.0) * s / 4.0;
+
+  g0 = grid + c0 + f0;
+  g1 = grid + c0 + f1;
+  g2 = grid + c0 + f2;
+  g3 = grid + c0 + f3;
+
+  float e0 = length(cell - grid - f0);
+  float e1 = length(cell - grid - f1);
+  float e2 = length(cell - grid - f2);
+  float e3 = length(cell - grid - f3);
+
+  float color = texture(colorTexture, g0 + direction).x;
+
+  if (e0 < s * 0.1) { return texture(colorTexture, g0 + direction); }
+  if (e1 < s * 0.1) {
+    // if (color > 0.7 && color < 0.9) {
+    //   vec4 neighbor = texture(colorTexture, g1 + direction);
+    //   if (abs(direction.x) > 0.0) {
+    //     return neighbor + vec4(-0.05, 0.05, 0.0, 0.0);
+    //   }
+    //   if (abs(direction.y) > 0.0) {
+    //     return neighbor + vec4(0.05, -0.05, 0.0, 0.0);
+    //   }
+    //   return neighbor;
+    // }
+    return texture(colorTexture, g1 + direction);
+  }
+  if (e2 < s * 0.1) { return texture(colorTexture, g2 + direction); }
+  if (e3 < s * 0.1) { return texture(colorTexture, g3 + direction); }
+
+  return vec4(1.0);
+}
+
 void main() {
   float number = 100.0;
   float aspect = resolution.y / resolution.x;
@@ -48,13 +114,13 @@ void main() {
 
   s0 = vec2(+0.0, +0.0) * s;
   s1 = vec2(+0.0, +1.0) * s;
-  s2 = vec2(+1.0, +1.0) * s;
-  s3 = vec2(-1.0, +1.0) * s;
-  s4 = vec2(+0.0, -1.0) * s;
-  s5 = vec2(+1.0, -1.0) * s;
-  s6 = vec2(-1.0, -1.0) * s;
-  s7 = vec2(+1.0, +0.0) * s;
-  s8 = vec2(-1.0, +0.0) * s;
+  s2 = vec2(+0.0, -1.0) * s;
+  s3 = vec2(-1.0, +0.0) * s;
+  s4 = vec2(+1.0, +0.0) * s;
+  s5 = vec2(-1.0, +1.0) * s;
+  s6 = vec2(+1.0, -1.0) * s;
+  s7 = vec2(+1.0, +1.0) * s;
+  s8 = vec2(-1.0, -1.0) * s;
 
   f0 = vec2(0.0, 0.0) * s / 2.0;
   f1 = vec2(1.0, 0.0) * s / 2.0;
@@ -89,11 +155,12 @@ void main() {
   vec4 state = texture(colorTexture, m + c0 + f0);
 
   // vec4(color, pressure, density, opacity)
-  // vec4(top-down, left-right, else, opacity) contraint
+  // vec4(mid-top, mid-bot, left-mid, right-mid) contraint
+  // vec4(left-top, right-bot, right-top, left-bot) contraint
   if (grid == target) {
     // creature
     if (sketchMode == 1 && state.y < 0.1) {
-      if (e0 < s * 0.1) { fragColor = vec4(0.2, 0.0, 0.3, 0.0); return; }
+      if (e0 < s * 0.1) { fragColor = vec4(0.8, 0.0, 0.3, 0.0); return; }
       if (e1 < s * 0.1) { fragColor = vec4(0.0, 1.0, 1.0, 1.0); return; }
       if (e2 < s * 0.1) { fragColor = vec4(0.0); return; }
       if (e3 < s * 0.1) { fragColor = vec4(0.0); return; }
@@ -173,81 +240,47 @@ void main() {
   ref77 = texture(mmTexture, g0 + s7);
   ref88 = texture(mmTexture, g0 + s8);
 
-  if (ref00.x > 0.1 && ref00.x < 0.2 && ref11.x > 0.0 && ref11.x < 0.1) {
+  if (ref00.x > 0.2 && ref00.x < 0.3 && ref11.x > 0.3 && ref11.x < 0.4) {
     next = ref0.xy + c0 + s1 - mod(ref0.xy + c0 + s1, s);
-    if (!connect) {
-      if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s1); return; }
-      if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s1); return; }
-      if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s1); return; }
-      if (e3 < s * 0.1) { fragColor = texture(colorTexture, g3 + s1); return; }
-    }
+    if (!connect) { fragColor = result(s1); return; }
     if (connect && e0 < s * 0.1) { fragColor = vec4(next, 1.0, 1.0); return; }
   }
-  if (ref00.x > 0.0 && ref00.x < 0.1 && ref44.x > 0.1 && ref44.x < 0.2) {
-    next = ref0.xy + c0 + s4 - mod(ref0.xy + c0 + s4, s);
-    if (!connect) {
-      if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s4); return; }
-      if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s4); return; }
-      if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s4); return; }
-      if (e3 < s * 0.1) { fragColor = texture(colorTexture, g3 + s4); return; }
-    }
-    if (connect && e0 < s * 0.1) { fragColor = vec4(next, 1.0, 1.0); return; }
-  }
-
-  if (ref00.x > 0.3 && ref00.x < 0.4 && ref33.x > 0.2 && ref33.x < 0.3) {
-    next = ref0.xy + c0 + s3 - mod(ref0.xy + c0 + s3, s);
-    if (!connect) {
-      if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s3); return; }
-      if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s3); return; }
-      if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s3); return; }
-    }
-    if (connect && e0 < s * 0.1) { fragColor = vec4(next, 1.0, 1.0); return; }
-  }
-  if (ref00.x > 0.2 && ref00.x < 0.3 && ref55.x > 0.3 && ref55.x < 0.4) {
-    next = ref0.xy + c0 + s5 - mod(ref0.xy + c0 + s5, s);
-    if (!connect) {
-      if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s5); return; }
-      if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s5); return; }
-      if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s5); return; }
-    }
-    if (connect && e0 < s * 0.1) { fragColor = vec4(next, 1.0, 1.0); return; }
-  }
-
-  if (ref00.x > 0.5 && ref00.x < 0.6 && ref22.x > 0.4 && ref22.x < 0.5) {
+  if (ref00.x > 0.3 && ref00.x < 0.4 && ref22.x > 0.2 && ref22.x < 0.3) {
     next = ref0.xy + c0 + s2 - mod(ref0.xy + c0 + s2, s);
-    if (!connect) {
-      if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s2); return; }
-      if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s2); return; }
-      if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s2); return; }
-    }
-    if (connect && e0 < s * 0.1) { fragColor = vec4(next, 1.0, 1.0); return; }
-  }
-  if (ref00.x > 0.4 && ref00.x < 0.5 && ref66.x > 0.5 && ref66.x < 0.6) {
-    next = ref0.xy + c0 + s6 - mod(ref0.xy + c0 + s6, s);
-    if (!connect) {
-      if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s6); return; }
-      if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s6); return; }
-      if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s6); return; }
-    }
+    if (!connect) { fragColor = result(s2); return; }
     if (connect && e0 < s * 0.1) { fragColor = vec4(next, 1.0, 1.0); return; }
   }
 
-  if (ref00.x > 0.7 && ref00.x < 0.8 && ref88.x > 0.6 && ref88.x < 0.7) {
-    next = ref0.xy + c0 + s8 - mod(ref0.xy + c0 + s8, s) + f0;
-    if (!connect) {
-      if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s8); return; }
-      if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s8); return; }
-      if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s8); return; }
-    }
+  if (ref00.x > 0.0 && ref00.x < 0.1 && ref33.x > 0.1 && ref33.x < 0.2) {
+    next = ref0.xy + c0 + s3 - mod(ref0.xy + c0 + s3, s);
+    if (!connect) { fragColor = result(s3); return; }
     if (connect && e0 < s * 0.1) { fragColor = vec4(next, 1.0, 1.0); return; }
   }
+  if (ref00.x > 0.1 && ref00.x < 0.2 && ref44.x > 0.0 && ref44.x < 0.1) {
+    next = ref0.xy + c0 + s4 - mod(ref0.xy + c0 + s4, s);
+    if (!connect) { fragColor = result(s4); return; }
+    if (connect && e0 < s * 0.1) { fragColor = vec4(next, 1.0, 1.0); return; }
+  }
+
+  if (ref00.x > 0.4 && ref00.x < 0.5 && ref55.x > 0.5 && ref55.x < 0.6) {
+    next = ref0.xy + c0 + s5 - mod(ref0.xy + c0 + s5, s);
+    if (!connect) { fragColor = result(s5); return; }
+    if (connect && e0 < s * 0.1) { fragColor = vec4(next, 1.0, 1.0); return; }
+  }
+  if (ref00.x > 0.5 && ref00.x < 0.6 && ref66.x > 0.4 && ref66.x < 0.5) {
+    next = ref0.xy + c0 + s6 - mod(ref0.xy + c0 + s6, s);
+    if (!connect) { fragColor = result(s6); return; }
+    if (connect && e0 < s * 0.1) { fragColor = vec4(next, 1.0, 1.0); return; }
+  }
+
   if (ref00.x > 0.6 && ref00.x < 0.7 && ref77.x > 0.7 && ref77.x < 0.8) {
     next = ref0.xy + c0 + s7 - mod(ref0.xy + c0 + s7, s) + f0;
-    if (!connect) {
-      if (e0 < s * 0.1) { fragColor = texture(colorTexture, g0 + s7); return; }
-      if (e1 < s * 0.1) { fragColor = texture(colorTexture, g1 + s7); return; }
-      if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s7); return; }
-    }
+    if (!connect) { fragColor = result(s7); return; }
+    if (connect && e0 < s * 0.1) { fragColor = vec4(next, 1.0, 1.0); return; }
+  }
+  if (ref00.x > 0.7 && ref00.x < 0.8 && ref88.x > 0.6 && ref88.x < 0.7) {
+    next = ref0.xy + c0 + s8 - mod(ref0.xy + c0 + s8, s) + f0;
+    if (!connect) { fragColor = result(s8); return; }
     if (connect && e0 < s * 0.1) { fragColor = vec4(next, 1.0, 1.0); return; }
   }
 }
