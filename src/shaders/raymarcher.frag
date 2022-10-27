@@ -152,6 +152,8 @@ void main() {
           if (ref0.x > 0.25) { sceneColor = vec4(0.0, 0.3, 0.6, 1.0); }
           // ground
           if (ref0.x > 0.35) { sceneColor = vec4(0.0, 0.6, 0.3, 1.0); }
+          // boundary
+          if (ref0.x > 0.95) { sceneColor = vec4(0.0); }
         break;
         case 1: case 2: case 3: // pure data
           sceneColor = texture(sand, uuvv);
