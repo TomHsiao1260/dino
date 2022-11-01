@@ -21,6 +21,8 @@ import sandmFragment from './shaders/sandm.frag';
 import sandmVertex from './shaders/sandm.vert';
 import sketchFragment from './shaders/sketch.frag';
 import sketchVertex from './shaders/sketch.vert';
+import initFragment from './shaders/init.frag';
+import initVertex from './shaders/init.vert';
 
 const _size = new Vector2();
 
@@ -119,6 +121,18 @@ class Raymarcher extends Mesh {
         number: { value: 10 },
       },
     });
+
+    const minit = new RawShaderMaterial({
+      glslVersion: GLSL3,
+      transparent: false,
+      vertexShader: initVertex,
+      fragmentShader: initFragment,
+      uniforms: {
+        number: { value: 100 },
+        resolution: { value: new Vector2() },
+      },
+    });
+
     const { defines, uniforms } = material;
     this.userData = {
       get time() {
@@ -198,6 +212,7 @@ class Raymarcher extends Mesh {
       sketch: new Mesh(plane, msketch),
       sandmesh: new Mesh(plane, msand),
       sandmmesh: new Mesh(plane, msandm),
+      initmesh: new Mesh(plane, minit),
       target,
       screen,
       sketchTarget,
@@ -209,6 +224,7 @@ class Raymarcher extends Mesh {
     this.matrixAutoUpdate = this.userData.raymarcher.matrixAutoUpdate = false;
     this.frustumCulled = this.userData.raymarcher.frustumCulled = false;
     this.clock = 0;
+    this.init = true;
   }
 
   dispose() {
@@ -222,7 +238,7 @@ class Raymarcher extends Mesh {
   }
 
   onBeforeRender(renderer, scene, camera) {
-    const { userData: { resolution, raymarcher, sketch, sandmesh, sandmmesh, sketchMode, renderScreenOnly } } = this;
+    const { userData: { resolution, raymarcher, sketch, sandmesh, sandmmesh, initmesh, sketchMode, renderScreenOnly } } = this;
     const { userData: { target, sketchTarget, sandTarget0, sandTarget1, sandTargetm, reset } } = this;
     const { material: { defines, uniforms } } = raymarcher;
 
@@ -241,6 +257,7 @@ class Raymarcher extends Mesh {
       uniforms.resolution.value.copy(_size);
       sandmesh.material.uniforms.resolution.value.copy(_size);
       sandmmesh.material.uniforms.resolution.value.copy(_size);
+      initmesh.material.uniforms.resolution.value.copy(_size);
     }
 
     const currentAutoClear = renderer.autoClear;
@@ -253,6 +270,14 @@ class Raymarcher extends Mesh {
     renderer.xr.enabled = false;
     renderer.setClearAlpha(0);
     renderer.state.buffers.depth.setMask(true);
+
+    if (this.init) {
+      renderer.setRenderTarget(sandTarget0);
+      renderer.render(initmesh, camera);
+      renderer.setRenderTarget(sandTarget1);
+      renderer.render(initmesh, camera);
+      this.init = false;
+    }
 
     switch (Raymarcher.sketchMode[sketchMode]) {
       case 0: // fullSketch

@@ -82,19 +82,32 @@ void main() {
 
   vec2 helper = vec2(0.0);
   float maxIndex = 0.0;
-  float maxDiff = 0.0;
+  float barrier = 0.01;
+  float h = 0.9;
 
-  if (abs(ref0.z - ref3.z) * (1.0 - ref0a.z) * (1.0 - ref3a.w) > 0.01) { maxIndex = 0.05; }
-  if (abs(ref0.z - ref4.z) * (1.0 - ref0a.w) * (1.0 - ref4a.z) > 0.01) { maxIndex = 0.15; }
+  if (abs(ref0.z - ref3.z) * ref0a.z * ref3a.w > barrier) { maxIndex = 0.05; }
+  if (abs(ref0.z - ref4.z) * ref0a.w * ref4a.z > barrier) { maxIndex = 0.15; }
 
-  if ((ref1.z - ref0.z) * (1.0 - ref0a.x) * (1.0 - ref1a.y) > maxDiff) { maxDiff = (ref1.z - ref0.z) * (1.0 - ref0a.x) * (1.0 - ref1a.y); maxIndex = 0.25; helper.x = 0.5; }
-  if ((ref0.z - ref2.z) * (1.0 - ref0a.y) * (1.0 - ref2a.x) > maxDiff) { maxDiff = (ref0.z - ref2.z) * (1.0 - ref0a.y) * (1.0 - ref2a.x); maxIndex = 0.35; helper.x = 0.5; }
+  if ((ref1.z - ref0.z) * ref0a.x * ref1a.y > barrier) { barrier = (ref1.z - ref0.z) * ref0a.x * ref1a.y; maxIndex = 0.25; helper.x = 0.5; }
+  if ((ref0.z - ref2.z) * ref0a.y * ref2a.x > barrier) { barrier = (ref0.z - ref2.z) * ref0a.y * ref2a.x; maxIndex = 0.35; helper.x = 0.5; }
 
-  if ((ref5.z - ref0.z) * 0.9 * (1.0 - ref0b.x) * (1.0 - ref5b.y) > maxDiff) { maxDiff = (ref5.z - ref0.z) * 0.9 * (1.0 - ref0b.x) * (1.0 - ref5b.y); maxIndex = 0.45; helper.y = 0.5; }
-  if ((ref0.z - ref6.z) * 0.9 * (1.0 - ref0b.y) * (1.0 - ref6b.x) > maxDiff) { maxDiff = (ref0.z - ref6.z) * 0.9 * (1.0 - ref0b.y) * (1.0 - ref6b.x); maxIndex = 0.55; helper.y = 0.5; }
+  if ((ref5.z - ref0.z) * 0.9 * ref0b.x * ref5b.y > barrier) { barrier = (ref5.z - ref0.z) * 0.9 * ref0b.x * ref5b.y; maxIndex = 0.45; helper.y = 0.5; }
+  if ((ref0.z - ref6.z) * 0.9 * ref0b.y * ref6b.x > barrier) { barrier = (ref0.z - ref6.z) * 0.9 * ref0b.y * ref6b.x; maxIndex = 0.55; helper.y = 0.5; }
 
-  if ((ref7.z - ref0.z) * 0.9 * (1.0 - ref0b.z) * (1.0 - ref7b.w) > maxDiff) { maxDiff = (ref7.z - ref0.z) * 0.9 * (1.0 - ref0b.z) * (1.0 - ref7b.w); maxIndex = 0.65; }
-  if ((ref0.z - ref8.z) * 0.9 * (1.0 - ref0b.w) * (1.0 - ref8b.z) > maxDiff) { maxDiff = (ref0.z - ref8.z) * 0.9 * (1.0 - ref0b.w) * (1.0 - ref8b.z); maxIndex = 0.75; }
+  if ((ref7.z - ref0.z) * 0.9 * ref0b.z * ref7b.w > barrier) { barrier = (ref7.z - ref0.z) * 0.9 * ref0b.z * ref7b.w; maxIndex = 0.65; }
+  if ((ref0.z - ref8.z) * 0.9 * ref0b.w * ref8b.z > barrier) { barrier = (ref0.z - ref8.z) * 0.9 * ref0b.w * ref8b.z; maxIndex = 0.75; }
+
+  // if (abs(ref0.z - ref3.z) * ref0a.z * ref3a.w > barrier) { maxIndex = 0.05; }
+  // if (abs(ref0.z - ref4.z) * ref0a.w * ref4a.z > barrier) { maxIndex = 0.15; }
+
+  // if ((ref0a.x + ref1a.y + (ref1.z - ref0.z)) * ref0a.x * ref1a.y > barrier) { barrier = (ref0a.x + ref1a.y + (ref1.z - ref0.z)) * ref0a.x * ref1a.y; maxIndex = 0.25; helper.x = 0.5; }
+  // if ((ref0a.y + ref2a.x + (ref0.z - ref2.z)) * ref0a.y * ref2a.x > barrier) { barrier = (ref0a.y + ref2a.x + (ref0.z - ref2.z)) * ref0a.y * ref2a.x; maxIndex = 0.35; helper.x = 0.5; }
+
+  // if ((ref0b.x + ref5b.y + h * (ref5.z - ref0.z)) * ref0b.x * ref5b.y > barrier) { barrier = (ref0b.x + ref5b.y + h * (ref5.z - ref0.z)) * ref0b.x * ref5b.y; maxIndex = 0.45; helper.y = 0.5; }
+  // if ((ref0b.y + ref6b.x + h * (ref0.z - ref6.z)) * ref0b.y * ref6b.x > barrier) { barrier = (ref0b.y + ref6b.x + h * (ref0.z - ref6.z)) * ref0b.y * ref6b.x; maxIndex = 0.55; helper.y = 0.5; }
+
+  // if ((ref0b.z + ref7b.w + h * (ref7.z - ref0.z)) * ref0b.z * ref7b.w > barrier) { barrier = (ref0b.z + ref7b.w + h * (ref7.z - ref0.z)) * ref0b.z * ref7b.w; maxIndex = 0.65; }
+  // if ((ref0b.w + ref8b.z + h * (ref0.z - ref8.z)) * ref0b.w * ref8b.z > barrier) { barrier = (ref0b.w + ref8b.z + h * (ref0.z - ref8.z)) * ref0b.w * ref8b.z; maxIndex = 0.75; }
 
   fragColor = vec4(maxIndex, 0.0, 0.0, 1.0);
   fragColor.yz = helper;

@@ -34,9 +34,9 @@ void draw(inout vec4 color, in vec3 color_, in float phase, in vec2 center, in f
   float frame = 6.0;
   float range = 0.1;
   float mode = floor(mod((time + phase) * speed, frame));
-  bool flip = step(frame, mod((time + phase) * speed, frame * 2.0)) == 0.0;
+  // bool flip = step(frame, mod((time + phase) * speed, frame * 2.0)) == 0.0;
   //float mode = 0.0;
-  //bool flip = false;
+  bool flip = false;
 
   float dispacement = mode * range / frame - range;
   // center.x += flip ? -dispacement : dispacement;
@@ -152,6 +152,8 @@ void main() {
           if (ref0.x > 0.25) { sceneColor = vec4(0.0, 0.3, 0.6, 1.0); }
           // ground
           if (ref0.x > 0.35) { sceneColor = vec4(0.0, 0.6, 0.3, 1.0); }
+          // creator
+          if (ref0.x > 0.75) { sceneColor = vec4(1.0); }
           // boundary
           if (ref0.x > 0.95) { sceneColor = vec4(0.0); }
         break;
@@ -159,7 +161,6 @@ void main() {
           sceneColor = texture(sand, uuvv);
         break;
       }
-
       fragColor = (color.x > 0.0) ? color : sceneColor;
       break;
   }
