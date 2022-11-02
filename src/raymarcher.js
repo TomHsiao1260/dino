@@ -65,7 +65,7 @@ class Raymarcher extends Mesh {
       },
       uniforms: {
         time: { value: 0 },
-        size: { value: 0.2 },
+        size: { value: 0.1 },
         count: { value: 10 },
         dino: { value: dino },
         sketch: { value: sketchTarget.texture },

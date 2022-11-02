@@ -23,6 +23,7 @@ uniform float delta;
 #define texture2D texture
 
 // TODO
+// don't use for loop to go through all creators
 // uv coordinate redefine, it's a mess
 // size ratio is not correct (currently always 1)
 // simpler way to write getter & setter
@@ -105,13 +106,13 @@ void main() {
     case 1: case 2: case 3: case 4: case 5: // sand
       float number = 100.0;
       float s = 1.0 / number;
-      vec2 memory = vec2(0.5) - mod(vec2(0.5), s);
+      vec2 memory = vec2(0.1, 0.97) - mod(vec2(0.1, 0.97), s);
       vec2 c0 = vec2(1.0, 1.0) * s / 4.0;
 
-      for(int i=0; i<50; ++i)
+      for(int i=1; i<50; ++i)
       {
         // float r_position = fract(sin(float(i))*1235.0) - 0.5;
-        // float r_size = fract(sin(float(i))*348.0) - 0.5;
+        float r_size = fract(sin(float(i))*348.0) - 0.5;
         float r_phase = fract(sin(float(i))*869.0) - 0.5;
 
         vec3 r_color;
@@ -119,7 +120,7 @@ void main() {
         r_color.g = fract(sin(float(i))*99.0) - 0.5;
         r_color.b = fract(sin(float(i))*761.0) - 0.5;
 
-        // float s = size - r_size * 0.2;
+        float ss = size - r_size * 0.1;
         // vec2 p = center + vec2(r_position * 1.5, s/2.0);
         float ph = r_phase;
         vec3 c = vec3(colorR, colorG, colorB) - r_color * delta;
@@ -132,10 +133,10 @@ void main() {
         vec4 pos = texture(sand, state).xyzw;
         vec2 p;
         p.x = pos.x * 2.0 - 1.0;
-        p.y = (pos.y * 2.0 - 1.0) * aspect + size / 2.0;
+        p.y = (pos.y * 2.0 - 1.0) * aspect + ss / 2.0;
 
         if (pos.w < 0.1) { break; }
-        draw(color, c, ph, p, size);
+        draw(color, c, ph, p, ss);
       }
 
       vec4 sceneColor = vec4(0.0);
@@ -153,7 +154,7 @@ void main() {
           // ground
           if (ref0.x > 0.35) { sceneColor = vec4(0.0, 0.6, 0.3, 1.0); }
           // creator
-          if (ref0.x > 0.75) { sceneColor = vec4(1.0); }
+          if (ref0.x > 0.75) { sceneColor = vec4(0.0); }
           // boundary
           if (ref0.x > 0.95) { sceneColor = vec4(0.0); }
         break;

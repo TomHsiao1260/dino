@@ -9,6 +9,14 @@ uniform sampler2D colorTexture;
 
 #define texture2D texture
 
+// To Do
+// need an interface to control element parameters and design equation at the same time
+// find the meaning of equation (hard to tweak parameters)
+
+float equation(float i0, float i1, float i2, float i3, float p0, float p1) {
+  return (i0 + i1 + p0 * p1 * (i2 - i3)) * i0 * i1;
+}
+
 void main() {
   float aspect = resolution.y / resolution.x;
   vec2 uuvv;
@@ -82,32 +90,27 @@ void main() {
 
   vec2 helper = vec2(0.0);
   float maxIndex = 0.0;
-  float barrier = 0.01;
-  float h = 0.9;
+  float barrier = 0.27;
 
-  if (abs(ref0.z - ref3.z) * ref0a.z * ref3a.w > barrier) { maxIndex = 0.05; }
-  if (abs(ref0.z - ref4.z) * ref0a.w * ref4a.z > barrier) { maxIndex = 0.15; }
+  // (i0 + i1 + p0 * p1 * (i2 - i3)) * i0 * i1;
+  float e1 = equation(ref0a.x, ref1a.y, ref1.z, ref0.z, 1.0, 3.0);
+  float e2 = equation(ref0a.y, ref2a.x, ref0.z, ref2.z, 1.0, 3.0);
+  float e3 = equation(ref0b.x, ref5b.y, ref5.z, ref0.z, 0.9, 0.2);
+  float e4 = equation(ref0b.y, ref6b.x, ref0.z, ref6.z, 0.9, 0.2);
+  float e5 = equation(ref0b.z, ref7b.w, ref7.z, ref0.z, 0.9, 0.2);
+  float e6 = equation(ref0b.w, ref8b.z, ref0.z, ref8.z, 0.9, 0.2);
 
-  if ((ref1.z - ref0.z) * ref0a.x * ref1a.y > barrier) { barrier = (ref1.z - ref0.z) * ref0a.x * ref1a.y; maxIndex = 0.25; helper.x = 0.5; }
-  if ((ref0.z - ref2.z) * ref0a.y * ref2a.x > barrier) { barrier = (ref0.z - ref2.z) * ref0a.y * ref2a.x; maxIndex = 0.35; helper.x = 0.5; }
+  if (abs(ref0.z - ref3.z) * ref0a.z * ref3a.w > barrier * 0.1) { maxIndex = 0.05; }
+  if (abs(ref0.z - ref4.z) * ref0a.w * ref4a.z > barrier * 0.1) { maxIndex = 0.15; }
 
-  if ((ref5.z - ref0.z) * 0.9 * ref0b.x * ref5b.y > barrier) { barrier = (ref5.z - ref0.z) * 0.9 * ref0b.x * ref5b.y; maxIndex = 0.45; helper.y = 0.5; }
-  if ((ref0.z - ref6.z) * 0.9 * ref0b.y * ref6b.x > barrier) { barrier = (ref0.z - ref6.z) * 0.9 * ref0b.y * ref6b.x; maxIndex = 0.55; helper.y = 0.5; }
+  if (e1 > barrier) { barrier = e1; maxIndex = 0.25; helper.x = 0.5; }
+  if (e2 > barrier) { barrier = e2; maxIndex = 0.35; helper.x = 0.5; }
 
-  if ((ref7.z - ref0.z) * 0.9 * ref0b.z * ref7b.w > barrier) { barrier = (ref7.z - ref0.z) * 0.9 * ref0b.z * ref7b.w; maxIndex = 0.65; }
-  if ((ref0.z - ref8.z) * 0.9 * ref0b.w * ref8b.z > barrier) { barrier = (ref0.z - ref8.z) * 0.9 * ref0b.w * ref8b.z; maxIndex = 0.75; }
+  if (e3 > barrier) { barrier = e3; maxIndex = 0.45; helper.y = 0.5; }
+  if (e4 > barrier) { barrier = e4; maxIndex = 0.55; helper.y = 0.5; }
 
-  // if (abs(ref0.z - ref3.z) * ref0a.z * ref3a.w > barrier) { maxIndex = 0.05; }
-  // if (abs(ref0.z - ref4.z) * ref0a.w * ref4a.z > barrier) { maxIndex = 0.15; }
-
-  // if ((ref0a.x + ref1a.y + (ref1.z - ref0.z)) * ref0a.x * ref1a.y > barrier) { barrier = (ref0a.x + ref1a.y + (ref1.z - ref0.z)) * ref0a.x * ref1a.y; maxIndex = 0.25; helper.x = 0.5; }
-  // if ((ref0a.y + ref2a.x + (ref0.z - ref2.z)) * ref0a.y * ref2a.x > barrier) { barrier = (ref0a.y + ref2a.x + (ref0.z - ref2.z)) * ref0a.y * ref2a.x; maxIndex = 0.35; helper.x = 0.5; }
-
-  // if ((ref0b.x + ref5b.y + h * (ref5.z - ref0.z)) * ref0b.x * ref5b.y > barrier) { barrier = (ref0b.x + ref5b.y + h * (ref5.z - ref0.z)) * ref0b.x * ref5b.y; maxIndex = 0.45; helper.y = 0.5; }
-  // if ((ref0b.y + ref6b.x + h * (ref0.z - ref6.z)) * ref0b.y * ref6b.x > barrier) { barrier = (ref0b.y + ref6b.x + h * (ref0.z - ref6.z)) * ref0b.y * ref6b.x; maxIndex = 0.55; helper.y = 0.5; }
-
-  // if ((ref0b.z + ref7b.w + h * (ref7.z - ref0.z)) * ref0b.z * ref7b.w > barrier) { barrier = (ref0b.z + ref7b.w + h * (ref7.z - ref0.z)) * ref0b.z * ref7b.w; maxIndex = 0.65; }
-  // if ((ref0b.w + ref8b.z + h * (ref0.z - ref8.z)) * ref0b.w * ref8b.z > barrier) { barrier = (ref0b.w + ref8b.z + h * (ref0.z - ref8.z)) * ref0b.w * ref8b.z; maxIndex = 0.75; }
+  if (e5 > barrier) { barrier = e5; maxIndex = 0.65; }
+  if (e6 > barrier) { barrier = e6; maxIndex = 0.75; }
 
   fragColor = vec4(maxIndex, 0.0, 0.0, 1.0);
   fragColor.yz = helper;

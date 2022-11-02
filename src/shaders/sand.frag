@@ -79,10 +79,16 @@ vec4 result (vec2 direction) {
   if (e0 < s * 0.1) { return j0; }
   if (e1 < s * 0.1) {
     if (j0.x > 0.7 && j0.x < 0.9) { return vec4(j1.xy, 0.0, 0.0); }
+    if (j0.x > 0.7 && j0.x < 0.9) { return vec4(j1.xy, 0.0, 0.0); }
+    // if (j0.x > 0.7 && j0.x < 0.9 && direction.x < 0.0) { return vec4(j1.xy, j1.z, 0.0); }
+    // if (j0.x > 0.7 && j0.x < 0.9 && direction.x > 0.0) { return vec4(j1.xy, 0.0, j1.w); }
     return j1;
   }
   if (e2 < s * 0.1) {
     if (j0.x > 0.7 && j0.x < 0.9) { return vec4(0.0); }
+    if (j0.x > 0.7 && j0.x < 0.9) { return vec4(0.0); }
+    // if (j0.x > 0.7 && j0.x < 0.9 && direction.x < 0.0) { return vec4(j2.x, 0.0, 0.0, j2.w); }
+    // if (j0.x > 0.7 && j0.x < 0.9 && direction.x > 0.0) { return vec4(0.0, j2.y, j2.z, 0.0); }
     return j2;
   }
   if (e3 < s * 0.1) { return j3; }
@@ -143,7 +149,7 @@ void main() {
   if (e2 < s * 0.1) { fragColor = texture(colorTexture, g2 + s0); }
   if (e3 < s * 0.1) { fragColor = texture(colorTexture, g3 + s0); }
 
-  vec2 m = vec2(0.5) - mod(vec2(0.5), s);
+  vec2 m = vec2(0.1, 0.97) - mod(vec2(0.1, 0.97), s);
   vec4 state = texture(colorTexture, m + c0 + f0);
 
   // vec4(color, pressure, density, opacity)
@@ -160,7 +166,7 @@ void main() {
     // ground
     if (sketchMode == 2) {
       float seed = random(time + grid);
-      if (e0 < s * 0.1) { fragColor = vec4(0.4, 0.0, 0.5, 1.0); return; }
+      if (e0 < s * 0.1) { fragColor = vec4(0.4, 0.0, 0.9, 1.0); return; }
       if (e1 < s * 0.1) { fragColor = vec4(0.5, 0.5, 0.0, 0.0); return; }
       if (e2 < s * 0.1) { fragColor = vec4(0.5, 0.5, 0.5, 0.5); return; }
       // if (e2 < s * 0.1) { fragColor = vec4(seed); return; }
@@ -227,7 +233,7 @@ void main() {
 
   // update creators freedom
   if (ref0.x > 0.7 && ref0.x < 0.9 && ref0.z < 0.9) {
-    float amp = 0.02; float barrier = 0.4;
+    float amp = 0.06; float barrier = 0.4;
     // ref0.z < 0.9 exclude connected dot calculation
     if (e1 < s * 0.1) {
       fragColor.z += amp * (random(uv*1.0+time)-barrier);
@@ -236,8 +242,8 @@ void main() {
     if (e2 < s * 0.1) {
       float a = amp * (random(uv*1.0+time)-barrier);
       float b = amp * (random(uv*2.0+time)-barrier);
-      fragColor.xw -= vec2(a);
-      fragColor.yz -= vec2(b);
+      fragColor.xw += vec2(a);
+      fragColor.yz += vec2(b);
     }
   }
 
