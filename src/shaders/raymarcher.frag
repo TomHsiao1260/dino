@@ -1,168 +1,79 @@
 precision highp float;
 precision highp int;
 
+struct SDF {
+  float distance;
+  vec3 color;
+};
+
 out vec4 fragColor;
+in vec3 ray;
 in vec2 uv;
+uniform sampler2D colorTexture;
 uniform vec2 resolution;
 
 uniform float time;
-uniform float size;
-uniform int count;
-uniform vec2 center;
-uniform int sketchMode;
-uniform int bufferRead;
-uniform sampler2D dino;
-uniform sampler2D sketch;
-uniform sampler2D sand;
+uniform vec3 cameraDirection;
+uniform float cameraFar;
+uniform float cameraFov;
+uniform float cameraNear;
+uniform vec3 cameraPosition;
 
-uniform float colorR;
-uniform float colorG;
-uniform float colorB;
-uniform float delta;
-
+#define saturate(a) clamp(a, 0.0, 1.0)
 #define texture2D texture
+#include <encodings_pars_fragment>
+#include <lighting>
 
-// TODO
-// don't use for loop to go through all creators
-// uv coordinate redefine, it's a mess
-// size ratio is not correct (currently always 1)
-// simpler way to write getter & setter
-// accelerate the parameters generate & control process (abstraction)
+float sdSphere(const in vec3 p, const in float r) {
+  return length(p)-r;
+}
 
-void draw(inout vec4 color, in vec3 color_, in float phase, in vec2 center, in float size) {
-  float intensity = 1.0;
-  float speed = 5.0;
-  float frame = 6.0;
-  float range = 0.1;
-  float mode = floor(mod((time + phase) * speed, frame));
-  // bool flip = step(frame, mod((time + phase) * speed, frame * 2.0)) == 0.0;
-  //float mode = 0.0;
-  bool flip = false;
+SDF map(const in vec3 p) {
+  float distance = sdSphere(p, 1.0);
+  vec3 color = vec3(0.5);
 
-  float dispacement = mode * range / frame - range;
-  // center.x += flip ? -dispacement : dispacement;
+  return SDF(distance, color);
+}
 
-  vec2 a = center - size / 2.0;
-  vec2 b = center + size / 2.0;
+vec3 getNormal(const in vec3 p, const in float d) {
+  const vec2 o = vec2(0.001, 0);
+  return normalize(
+    d - vec3(
+      map(p - o.xyy).distance,
+      map(p - o.yxy).distance,
+      map(p - o.yyx).distance
+    )
+  );
+}
 
-  intensity = min(intensity, step(a.x, uv.x));
-  intensity = min(intensity, step(a.y, uv.y));
-  intensity = min(intensity, 1.0 - step(b.x, uv.x));
-  intensity = min(intensity, 1.0 - step(b.y, uv.y));
+void march(inout vec4 color, inout float distance) {
+  for (int i = 0; i < MAX_ITERATIONS && distance < MAX_DISTANCE; i++) {
+    vec3 position = cameraPosition + ray * distance;
 
-  float aspect = resolution.y / resolution.x;
-  vec2 uuvv = uv;
-  uuvv.x = (uv.x + 1.0) / 2.0;
-  uuvv.y = (uv.y / aspect + 1.0) / 2.0;
-
-  vec2 aa = a;
-  aa.x = (a.x + 1.0) / 2.0;
-  aa.y = (a.y / aspect + 1.0) / 2.0;
-  vec2 bb = b;
-  bb.x = (b.x + 1.0) / 2.0;
-  bb.y = (b.y / aspect + 1.0) / 2.0;
-
-  // 1233 100 "x": 848, "y": 0, "w": 176, "h": 52, "piece": 4,
-  // lb 0.688 0.480 tr 0.830 1.000
-
-  // vec2 lb = vec2(0.688 + mode / 4.0 * (0.830 - 0.688), 0.480);
-  // vec2 tr = vec2(0.688 + (mode + 1.0) / 4.0 * (0.830 - 0.688), 1.000);
-  vec2 lb = vec2(0.0);
-  vec2 tr = vec2(1.0);
-
-  vec2 llbb = lb;
-  vec2 ttrr = tr;
-  lb.x = flip ? ttrr.x : llbb.x;
-  tr.x = flip ? llbb.x : ttrr.x;
-
-  vec2 uu = uuvv;
-  uu.x = uuvv.x * (tr.x-lb.x)/(bb.x-aa.x) + lb.x - aa.x * (tr.x-lb.x)/(bb.x-aa.x);
-  uu.y = uuvv.y * (tr.y-lb.y)/(bb.y-aa.y) + lb.y - aa.y * (tr.y-lb.y)/(bb.y-aa.y);
-
-  // vec4 tt = texture(dino, uu);
-  vec4 tt = texture(sketch, uu);
-
-  vec3 cc = (tt.x > 0.5) ? color_ : vec3(0.0);
-  // vec3 cc = (tt.x > 0.5) ? vec3(1.0) : color_;
-  vec4 pre_c = color;
-  vec4 cur_c = vec4(cc, tt.w * intensity);
-  color.xyz = (cur_c.w > 0.0) ? cur_c.xyz : pre_c.xyz;
-  color.w = max(pre_c.w, cur_c.w);
+    SDF step = map(position);
+    if (step.distance <= MIN_DISTANCE) {
+      color = vec4(getLight(position, getNormal(position, step.distance), step.color), 1.0);
+      break;
+    }
+    distance += step.distance;
+  }
 }
 
 void main() {
-  vec4 color = vec4(0.0);
-
   float aspect = resolution.y / resolution.x;
   vec2 uuvv = uv;
   uuvv.x = (uv.x + 1.0) / 2.0;
   uuvv.y = (uv.y / aspect + 1.0) / 2.0;
 
-  switch (sketchMode) {
-    default:
-    case 0: // fullSketch
-      fragColor = texture(sketch, uuvv);
-      break;
-    case 1: case 2: case 3: case 4: case 5: // sand
-      float number = 100.0;
-      float s = 1.0 / number;
-      vec2 memory = vec2(0.1, 0.97) - mod(vec2(0.1, 0.97), s);
-      vec2 c0 = vec2(1.0, 1.0) * s / 4.0;
+  vec4 color = vec4(0.0);
+  float distance = cameraNear;
+  march(color, distance);
 
-      for(int i=1; i<50; ++i)
-      {
-        // float r_position = fract(sin(float(i))*1235.0) - 0.5;
-        float r_size = fract(sin(float(i))*348.0) - 0.5;
-        float r_phase = fract(sin(float(i))*869.0) - 0.5;
+  vec4 cellular = texture(colorTexture, uuvv);
+  vec4 sdfColor = saturate(LinearTosRGB(color));
+  fragColor = (sdfColor.w > 0.0) ? sdfColor : cellular;
 
-        vec3 r_color;
-        r_color.r = fract(sin(float(i))*687.0) - 0.5;
-        r_color.g = fract(sin(float(i))*99.0) - 0.5;
-        r_color.b = fract(sin(float(i))*761.0) - 0.5;
-
-        float ss = size - r_size * 0.1;
-        // vec2 p = center + vec2(r_position * 1.5, s/2.0);
-        float ph = r_phase;
-        vec3 c = vec3(colorR, colorG, colorB) - r_color * delta;
-
-        vec2 state;
-        state.x = (memory.x + float(i+1) * s) - mod((memory.x + float(i+1) * s), s);
-        state.y = memory.y;
-        state += c0;
-
-        vec4 pos = texture(sand, state).xyzw;
-        vec2 p;
-        p.x = pos.x * 2.0 - 1.0;
-        p.y = (pos.y * 2.0 - 1.0) * aspect + ss / 2.0;
-
-        if (pos.w < 0.1) { break; }
-        draw(color, c, ph, p, ss);
-      }
-
-      vec4 sceneColor = vec4(0.0);
-
-      switch (bufferRead) {
-        default:
-        case 0: // normal
-          vec2 cell = uuvv - mod(uuvv, s) + vec2(s, s) / 4.0;
-          vec4 ref0 = texture(sand, cell);
-
-          // block
-          if (ref0.x > 0.15) { sceneColor = vec4(0.3, 0.3, 0.3, 1.0); }
-          // water
-          if (ref0.x > 0.25) { sceneColor = vec4(0.0, 0.3, 0.6, 1.0); }
-          // ground
-          if (ref0.x > 0.35) { sceneColor = vec4(0.0, 0.6, 0.3, 1.0); }
-          // creator
-          if (ref0.x > 0.75) { sceneColor = vec4(0.0); }
-          // boundary
-          if (ref0.x > 0.95) { sceneColor = vec4(0.0); }
-        break;
-        case 1: case 2: case 3: // pure data
-          sceneColor = texture(sand, uuvv);
-        break;
-      }
-      fragColor = (color.x > 0.0) ? color : sceneColor;
-      break;
-  }
+  float z = (distance >= MAX_DISTANCE) ? cameraFar : (distance * dot(cameraDirection, ray));
+  float ndcDepth = -((cameraFar + cameraNear) / (cameraNear - cameraFar)) + ((2.0 * cameraFar * cameraNear) / (cameraNear - cameraFar)) / z;
+  gl_FragDepth = ((gl_DepthRange.diff * ndcDepth) + gl_DepthRange.near + gl_DepthRange.far) / 2.0;
 }

@@ -12,9 +12,10 @@ in vec2 uv;
 // need to design a flow which can simply apply customized physics rule
 // Can pixel movement speed exceed the speed of framerate?
 // It's buggy when canvas width & height is small or number is large (e.g. using texel instead?)
-// find a better query method for texture (e.g. using matrix?)
+// find a better query method for texture (e.g. using matrix?, or lower the query number by using more buffer trick?)
 // pressure define is still not that great (& need to support liquid mode)
 // find out a flexable way to query, connect, manipulate the grid
+// should redesign a element update network (element switch & self value changing should be the same logic not seperated)
 
 uniform vec2 mouse;
 uniform sampler2D colorTexture;
@@ -158,10 +159,13 @@ void main() {
   if (grid == target) {
     // creature
     if (sketchMode == 1 && state.y < 0.1) {
+      float seed = random(time + grid);
       if (e0 < s * 0.1) { fragColor = vec4(0.8, 0.0, 0.3, 1.0); return; }
       if (e1 < s * 0.1) { fragColor = vec4(0.5, 0.5, 0.5, 0.5); return; }
       if (e2 < s * 0.1) { fragColor = vec4(0.5, 0.5, 0.5, 0.5); return; }
-      if (e3 < s * 0.1) { fragColor = vec4(0.0); return; }
+      // if (e1 < s * 0.1) { fragColor = vec4(0.0); return; }
+      // if (e2 < s * 0.1) { fragColor = vec4(0.0); return; }
+      if (e3 < s * 0.1) { fragColor = vec4(1.0, 1.0, seed, 0.5); return; }
     }
     // ground
     if (sketchMode == 2) {
@@ -232,20 +236,47 @@ void main() {
   if (ce.w > 0.45 && ce.w < 0.55) { connect = true; g0 = ce.xy + c0; }
 
   // update creators freedom
-  if (ref0.x > 0.7 && ref0.x < 0.9 && ref0.z < 0.9) {
-    float amp = 0.06; float barrier = 0.4;
-    // ref0.z < 0.9 exclude connected dot calculation
-    if (e1 < s * 0.1) {
-      fragColor.z += amp * (random(uv*1.0+time)-barrier);
-      fragColor.w += amp * (random(uv*2.0+time)-barrier);
+  // if (ref0.x > 0.7 && ref0.x < 0.9 && ref0.z < 0.9) {
+  //   float amp = 0.06; float barrier = 0.4;
+  //   // ref0.z < 0.9 exclude connected dot calculation
+  //   if (e1 < s * 0.1) {
+  //     fragColor.z += amp * (random(uv*1.0+time)-barrier);
+  //     fragColor.w += amp * (random(uv*2.0+time)-barrier);
+  //   }
+  //   if (e2 < s * 0.1) {
+  //     float a = amp * (random(uv*1.0+time)-barrier);
+  //     float b = amp * (random(uv*2.0+time)-barrier);
+  //     fragColor.xw += vec2(a);
+  //     fragColor.yz += vec2(b);
+  //   }
+  // }
+
+  // creature map
+  if (e3 < s * 0.1) {
+    vec4 d0 = texture(colorTexture, g3 + s0);
+    vec4 d1 = texture(colorTexture, g3 + s1);
+    vec4 d2 = texture(colorTexture, g3 + s2);
+    vec4 d3 = texture(colorTexture, g3 + s3);
+    vec4 d4 = texture(colorTexture, g3 + s4);
+    vec4 d5 = texture(colorTexture, g3 + s5);
+    vec4 d6 = texture(colorTexture, g3 + s6);
+    vec4 d7 = texture(colorTexture, g3 + s7);
+    vec4 d8 = texture(colorTexture, g3 + s8);
+
+    float st = 0.05;
+
+    // w 0.5 means source
+    if (d0.w > 0.4 && d0.w < 0.6) {
+      
+    } else {
+      fragColor = vec4(0.0);
+      if (d8.x > 0.0 && d8.y > 0.0) { fragColor = vec4(d8.x - st, d8.y - st, d8.z, 1.0); }
+      if (d3.x > 0.0) { fragColor = vec4(d3.x - st, d3.y, d3.z, 1.0); }
+      if (d2.y > 0.0) { fragColor = vec4(d2.x, d2.y - st, d2.z, 1.0); }
     }
-    if (e2 < s * 0.1) {
-      float a = amp * (random(uv*1.0+time)-barrier);
-      float b = amp * (random(uv*2.0+time)-barrier);
-      fragColor.xw += vec2(a);
-      fragColor.yz += vec2(b);
-    }
-  }
+
+    // fragColor = vec4(0.0); return;
+  } 
 
   ref00 = texture(mmTexture, g0 + s0);
   ref11 = texture(mmTexture, g0 + s1);
