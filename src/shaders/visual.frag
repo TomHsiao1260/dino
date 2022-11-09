@@ -5,6 +5,7 @@ out vec4 fragColor;
 in vec2 uv;
 uniform vec2 resolution;
 
+uniform float number;
 uniform float time;
 uniform float size;
 uniform int count;
@@ -95,7 +96,6 @@ void main() {
 
   float aspect = resolution.y / resolution.x;
   vec2 uuvv = uv;
-  float number = 100.0;
   float s = 1.0 / number;
   uuvv.x = (uv.x + 1.0) / 2.0;
   uuvv.y = (uv.y / aspect + 1.0) / 2.0;

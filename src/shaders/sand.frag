@@ -6,6 +6,7 @@ uniform int sketchMode;
 
 out vec4 fragColor;
 uniform float time;
+uniform float number;
 in vec2 uv;
 
 // To Do
@@ -29,7 +30,6 @@ float random (vec2 st) {
 }
 
 vec4 result (vec2 direction) {
-  float number = 100.0;
   float aspect = resolution.y / resolution.x;
   float s = 1.0 / number;
 
@@ -98,7 +98,6 @@ vec4 result (vec2 direction) {
 }
 
 void main() {
-  float number = 100.0;
   float aspect = resolution.y / resolution.x;
   float s = 1.0 / number;
 

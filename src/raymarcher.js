@@ -44,6 +44,8 @@ class Raymarcher extends Mesh {
     const sandTarget1 = new WebGLRenderTarget(1, 1);
     const sandTargetm = new WebGLRenderTarget(1, 1);
 
+    const number = 20;
+
     const screen = new RawShaderMaterial({
       glslVersion: GLSL3,
       transparent: false,
@@ -61,6 +63,7 @@ class Raymarcher extends Mesh {
       vertexShader: visualVertex,
       fragmentShader: visualFragment,
       uniforms: {
+        number: { value: number },
         time: { value: 0 },
         size: { value: 0.1 },
         count: { value: 10 },
@@ -88,6 +91,7 @@ class Raymarcher extends Mesh {
         MIN_DISTANCE: '0.005',
       },
       uniforms: {
+        number: { value: number },
         colorTexture: { value: visualTarget.texture },
         cameraDirection: { value: new Vector3() },
         cameraFar: { value: 0 },
@@ -102,6 +106,7 @@ class Raymarcher extends Mesh {
       vertexShader: sandVertex,
       fragmentShader: sandFragment,
       uniforms: {
+        number: { value: number },
         time: { value: 0 },
         bufferRead: { value: 0 },
         sketchMode: { value: 2 },
@@ -117,6 +122,7 @@ class Raymarcher extends Mesh {
       vertexShader: sandmVertex,
       fragmentShader: sandmFragment,
       uniforms: {
+        number: { value: number },
         time: { value: 0 },
         colorTexture: { value: sandTarget0.texture },
         resolution: { value: new Vector2() },
@@ -141,12 +147,22 @@ class Raymarcher extends Mesh {
       vertexShader: initVertex,
       fragmentShader: initFragment,
       uniforms: {
-        number: { value: 100 },
+        number: { value: number },
         resolution: { value: new Vector2() },
       },
     });
 
     this.userData = {
+      get number() {
+        return mvisual.uniforms.number.value;
+      },
+      set number(value) {
+        mray.uniforms.number.value = value;
+        mvisual.uniforms.number.value = value;
+        msand.uniforms.number.value = value;
+        msandm.uniforms.number.value = value;
+        minit.uniforms.number.value = value;
+      },
       get time() {
         return mvisual.uniforms.time.value;
       },

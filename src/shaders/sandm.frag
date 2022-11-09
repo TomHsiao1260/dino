@@ -3,6 +3,7 @@ precision highp int;
 
 uniform vec2 resolution;
 uniform float time;
+uniform float number;
 out vec4 fragColor;
 in vec2 uv;
 uniform sampler2D colorTexture;
@@ -20,7 +21,6 @@ float equation(float i0, float i1, float i2, float i3, float p0, float p1) {
 void main() {
   float aspect = resolution.y / resolution.x;
   vec2 uuvv;
-  float number = 100.0;
   uuvv.x = (uv.x + 1.0) / 2.0;
   uuvv.y = (uv.y / aspect + 1.0) / 2.0;
 
