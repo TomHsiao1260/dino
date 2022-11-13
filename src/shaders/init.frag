@@ -37,6 +37,13 @@ void main() {
     if (e3 < s * 0.1) { fragColor = vec4(0.0); return; }
   }
 
+  // if (mod(uuvv.x, 2.0*s) < 1.0*s && mod(uuvv.y, 2.0*s) < 1.0*s) {
+  //   if (e0 < s * 0.1) { fragColor = vec4(0.2, 0.0, 1.0, 1.0); return; }
+  //   if (e1 < s * 0.1) { fragColor = vec4(0.0); return; }
+  //   if (e2 < s * 0.1) { fragColor = vec4(0.0); return; }
+  //   if (e3 < s * 0.1) { fragColor = vec4(0.0); return; }
+  // }
+
   // empty
   if (e0 < s * 0.1) { fragColor = vec4(0.0); return; }
   if (e1 < s * 0.1) { fragColor = vec4(0.5); return; }

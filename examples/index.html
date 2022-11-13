@@ -128,29 +128,36 @@
           if (!remove) { tick(); return; }
           if (remove) { window.cancelAnimationFrame(remove); remove = null; return; }
         }
-        // 1: normal
+        // 1: ray
         if (e.keyCode == 49) {
+          raymarcher.userData.bufferRead = 'ray';
+          raymarcher.userData.renderScreenOnly = true;
+          renderOnce();
+          raymarcher.userData.renderScreenOnly = false;
+        }
+        // 2: normal
+        if (e.keyCode == 50) {
           raymarcher.userData.bufferRead = 'normal';
           raymarcher.userData.renderScreenOnly = true;
           renderOnce();
           raymarcher.userData.renderScreenOnly = false;
         }
-        // 2: current render
-          if (e.keyCode == 50) {
+        // 3: current render
+          if (e.keyCode == 51) {
           raymarcher.userData.bufferRead = 'current';
           raymarcher.userData.renderScreenOnly = true;
           renderOnce();
           raymarcher.userData.renderScreenOnly = false;
         }
-        // 3: previous render
-        if (e.keyCode == 51) {
+        // 4: previous render
+        if (e.keyCode == 52) {
           raymarcher.userData.bufferRead = 'previous';
           raymarcher.userData.renderScreenOnly = true;
           renderOnce();
           raymarcher.userData.renderScreenOnly = false;
         }
-        // 4: targetm render
-        if (e.keyCode == 52) {
+        // 5: targetm render
+        if (e.keyCode == 53) {
           raymarcher.userData.bufferRead = 'targetm';
           raymarcher.userData.renderScreenOnly = true;
           renderOnce();

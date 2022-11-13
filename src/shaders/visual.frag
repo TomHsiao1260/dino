@@ -174,7 +174,7 @@ void main() {
 
       switch (bufferRead) {
         default:
-        case 0: // normal
+        case 0: case 1: // normal
           // block
           if (ele.x > 0.15) { sceneColor = vec4(0.3, 0.3, 0.3, 1.0); }
           // water
@@ -186,7 +186,7 @@ void main() {
           // boundary
           if (ele.x > 0.95) { sceneColor = vec4(0.0); }
         break;
-        case 1: case 2: case 3: // pure data
+        case 2: case 3: case 4: // pure data
           sceneColor = texture(sand, uuvv);
         break;
       }

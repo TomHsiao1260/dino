@@ -44,7 +44,7 @@ class Raymarcher extends Mesh {
     const sandTarget1 = new WebGLRenderTarget(1, 1);
     const sandTargetm = new WebGLRenderTarget(1, 1);
 
-    const number = 20;
+    const number = 50;
 
     const screen = new RawShaderMaterial({
       glslVersion: GLSL3,
@@ -343,21 +343,27 @@ class Raymarcher extends Mesh {
 
         if (sandmesh.material.uniforms.bufferRead.value === 0) visualmesh.material.uniforms.sand.value = t1.texture;
         if (sandmesh.material.uniforms.bufferRead.value === 1) visualmesh.material.uniforms.sand.value = t1.texture;
-        if (sandmesh.material.uniforms.bufferRead.value === 2) visualmesh.material.uniforms.sand.value = t0.texture;
-        if (sandmesh.material.uniforms.bufferRead.value === 3) visualmesh.material.uniforms.sand.value = sandTargetm.texture;
+        if (sandmesh.material.uniforms.bufferRead.value === 2) visualmesh.material.uniforms.sand.value = t1.texture;
+        if (sandmesh.material.uniforms.bufferRead.value === 3) visualmesh.material.uniforms.sand.value = t0.texture;
+        if (sandmesh.material.uniforms.bufferRead.value === 4) visualmesh.material.uniforms.sand.value = sandTargetm.texture;
+
+        renderer.setRenderTarget(visualTarget);
+        renderer.clear();
+        renderer.render(visualmesh, camera);
+
+        if (sandmesh.material.uniforms.bufferRead.value === 0) {
+          this.userData.screen.uniforms.colorTexture.value = rayTarget.texture;
+          renderer.setRenderTarget(rayTarget);
+          renderer.clear();
+          renderer.render(raymesh, camera);
+        } else {
+          this.userData.screen.uniforms.colorTexture.value = visualTarget.texture;
+        }
 
         break;
       default:
         break;
     }
-
-    renderer.setRenderTarget(visualTarget);
-    renderer.clear();
-    renderer.render(visualmesh, camera);
-
-    renderer.setRenderTarget(rayTarget);
-    renderer.clear();
-    renderer.render(raymesh, camera);
 
     renderer.autoClear = currentAutoClear;
     renderer.shadowMap.autoUpdate = currentShadowAutoUpdate;
@@ -378,10 +384,11 @@ Raymarcher.sketchMode = {
 };
 
 Raymarcher.bufferRead = {
-  normal: 0,
-  current: 1,
-  previous: 2,
-  targetm: 3,
+  ray: 0,
+  normal: 1,
+  current: 2,
+  previous: 3,
+  targetm: 4,
 };
 
 export default Raymarcher;
